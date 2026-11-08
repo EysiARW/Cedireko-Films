@@ -52,6 +52,18 @@
 </head>
 <body>
 
+  <!-- Bang Motion: Directional Motion Blur Optical Filters -->
+  <svg class="sr-only" aria-hidden="true" style="position: absolute; width: 0; height: 0; pointer-events: none;">
+    <defs>
+      <filter id="motion-blur-vert" x="-50%" y="-70%" width="200%" height="240%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="0 14" />
+      </filter>
+      <filter id="motion-blur-horiz" x="-70%" y="-50%" width="240%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="20 0" />
+      </filter>
+    </defs>
+  </svg>
+
   <!-- Skip link for keyboard accessibility (WCAG 2.4.1) -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
@@ -138,6 +150,7 @@
         <source src="projects/EA_FINALCUT.mp4" type="video/mp4">
       </video>
       <div class="hero__video-overlay"></div>
+      <div class="hero__flare-streak" aria-hidden="true"></div>
     </div>
 
     <!-- Letterbox cinema framing bars -->
@@ -146,7 +159,7 @@
 
     <!-- Viewfinder camera telemetry overlay -->
     <div class="hero__viewfinder hero-viewfinder" aria-hidden="true">
-      <span class="hero-tc bl">00:00:00:00</span>
+      <span class="hero-tc bl" id="hero-live-timecode">00:00:00:00</span>
       <span class="hero-tc br">REC <span class="tally-dot" aria-hidden="true">&bull;</span></span>
     </div>
 
@@ -161,7 +174,9 @@
              fetchpriority="high" 
              decoding="async">
       </div>
-      <h1 id="hero-title" class="studio-name hero__title wordmark">CEDIREKO FILMS</h1>
+      <h1 id="hero-title" class="studio-name hero__title wordmark">
+        <span class="kinetic-wordmark">CEDIREKO FILMS</span>
+      </h1>
       <div class="hero__tagline-group">
         <p class="tagline hero__tagline">&ldquo;Maging mabait lang palagi.&rdquo;</p>
       </div>

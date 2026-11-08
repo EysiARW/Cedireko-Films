@@ -733,6 +733,113 @@ class MediaPreviewController {
 }
 
 /**
+ * CinematicOpenerController
+ * Coordinates Bang Motion cinematic motion graphics:
+ * - Deterministic ARRI/RED 24fps camera viewfinder timecode generator
+ * - Optical motion blur lifecycle cleanup (removes SVG filter once settled)
+ * - Micro-depth camera parallax on fine-pointer desktop viewports
+ * - Reduced-motion safety
+ */
+class CinematicOpenerController {
+  #timecodeEl;
+  #heroEl;
+  #wordmarkEl;
+  #flareEl;
+  #rafId;
+  #startTime;
+  #isReducedMotion;
+
+  constructor(options = {}) {
+    this.options = Object.assign({
+      timecodeSelector: '#hero-live-timecode, .hero-tc.bl',
+      heroSelector: '#hero, .hero',
+      wordmarkSelector: '.kinetic-wordmark',
+      flareSelector: '.hero__flare-streak',
+      fps: 24,
+      settleDelayMs: 950
+    }, options);
+
+    this.#timecodeEl = document.querySelector(this.options.timecodeSelector);
+    this.#heroEl = document.querySelector(this.options.heroSelector);
+    this.#wordmarkEl = document.querySelector(this.options.wordmarkSelector);
+    this.#flareEl = document.querySelector(this.options.flareSelector);
+    this.#rafId = null;
+    this.#startTime = null;
+    this.#isReducedMotion = false;
+
+    this.tick = this.tick.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+
+    this.init();
+  }
+
+  init() {
+    this.#isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Deterministic 24 fps ARRI/RED viewfinder telemetry clock
+    if (this.#timecodeEl) {
+      this.#startTime = performance.now();
+      this.#rafId = window.requestAnimationFrame(this.tick);
+    }
+
+    // Bang Motion rule: SVG directional blur filter is removed once animation settles
+    if (!this.#isReducedMotion && this.#wordmarkEl) {
+      setTimeout(() => {
+        if (this.#wordmarkEl) {
+          this.#wordmarkEl.style.filter = 'none';
+        }
+      }, this.options.settleDelayMs);
+    }
+
+    // Micro-depth camera parallax on desktop viewports
+    const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (supportsHover && !this.#isReducedMotion && this.#heroEl) {
+      window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
+    }
+  }
+
+  tick(now) {
+    if (!this.#startTime) this.#startTime = now;
+    const elapsedSeconds = (now - this.#startTime) / 1000;
+
+    // 24 frames per second cinema standard
+    const totalFrames = Math.floor(elapsedSeconds * this.options.fps);
+    const ff = String(totalFrames % this.options.fps).padStart(2, '0');
+    const ss = String(Math.floor(totalFrames / this.options.fps) % 60).padStart(2, '0');
+    const mm = String(Math.floor(totalFrames / (this.options.fps * 60)) % 60).padStart(2, '0');
+    const hh = String(Math.floor(totalFrames / (this.options.fps * 3600)) % 24).padStart(2, '0');
+
+    if (this.#timecodeEl) {
+      this.#timecodeEl.textContent = `${hh}:${mm}:${ss}:${ff}`;
+    }
+
+    this.#rafId = window.requestAnimationFrame(this.tick);
+  }
+
+  handleMouseMove(e) {
+    if (!this.#heroEl || this.#isReducedMotion) return;
+    const rect = this.#heroEl.getBoundingClientRect();
+    if (rect.bottom < 0) return; // User has scrolled down
+
+    const normX = (e.clientX / window.innerWidth) - 0.5;
+    const normY = (e.clientY / window.innerHeight) - 0.5;
+
+    const inner = this.#heroEl.querySelector('.hero-inner');
+    if (inner) {
+      inner.style.transform = `translate3d(${normX * 8}px, ${normY * 8}px, 0)`;
+    }
+  }
+
+  destroy() {
+    if (this.#rafId) {
+      window.cancelAnimationFrame(this.#rafId);
+      this.#rafId = null;
+    }
+    window.removeEventListener('mousemove', this.handleMouseMove);
+  }
+}
+
+/**
  * PortfolioApp
  * Global coordinator and entry point initialized on DOMContentLoaded.
  */
@@ -742,6 +849,7 @@ class PortfolioApp {
     this.reelFilter = null;
     this.videoModal = null;
     this.mediaPreview = null;
+    this.opener = null;
     this.isInitialized = false;
   }
 
@@ -752,6 +860,7 @@ class PortfolioApp {
     this.reelFilter = new ReelFilterController();
     this.videoModal = new VideoModalPlayerController();
     this.mediaPreview = new MediaPreviewController(this.videoModal);
+    this.opener = new CinematicOpenerController();
 
     this.isInitialized = true;
   }
