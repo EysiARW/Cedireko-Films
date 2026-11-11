@@ -31,13 +31,13 @@ suite.test('Hero: Letterbox framing bars render at top and bottom', async ({ bro
   Assert.isTrue(bottomBar, 'Bottom letterbox bar (.letterbox.bottom) must exist in DOM');
 });
 
-suite.test('Hero: Studio brand logo is present and loads with natural dimensions', async ({ browser }) => {
-  const logoData = await browser.evaluate("(() => {\n    const img = document.querySelector('.hero .logo-mark img') || document.querySelector('.hero img[src*=\"CEDIREKO\"]');\n    if (!img) return null;\n    return {\n      src: img.getAttribute('src'),\n      naturalWidth: img.naturalWidth,\n      naturalHeight: img.naturalHeight,\n      alt: img.getAttribute('alt')\n    };\n  })()");
+suite.test('Hero: Brand logo lives in the header only, not duplicated in the hero', async ({ browser }) => {
+  const logoData = await browser.evaluate("(() => {\n    const heroLogo = document.querySelector('.hero img');\n    const img = document.querySelector('.site-header__logo');\n    if (!img) return null;\n    return {\n      heroHasLogo: !!heroLogo,\n      src: img.getAttribute('src'),\n      naturalWidth: img.naturalWidth\n    };\n  })()");
 
-  Assert.ok(logoData, 'Hero logo image element must exist');
+  Assert.ok(logoData, 'Header logo image element must exist');
+  Assert.isFalse(logoData.heroHasLogo, 'Hero must not repeat the logo the header already shows');
   Assert.includes(logoData.src, 'CEDIREKO', 'Logo src must reference CEDIREKO brand logo asset');
   Assert.greaterThanOrEqual(logoData.naturalWidth, 1, 'Logo image must successfully decode with naturalWidth > 0');
-  Assert.ok(logoData.alt, 'Logo image must have an alt attribute');
 });
 
 suite.test('Hero: Studio wordmark "CEDIREKO FILMS" is displayed with Fraunces serif', async ({ browser }) => {
