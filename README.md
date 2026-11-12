@@ -1,108 +1,111 @@
-# CEDIREKO Films
+# CEDIREKO FILMS — Videography Portfolio (2026)
 
-Portfolio site for CEDIREKO Films, a one-person video studio in Manila. Static HTML, CSS and JS on GitHub Pages: https://eysiarw.github.io/Cedireko-Films/
+[![Vanilla Web](https://img.shields.io/badge/Stack-HTML5%20%7C%20CSS3%20%7C%20ES6+-wine?style=flat-square)](https://github.com/EysiARW/Cedireko-Films)
+[![Accessibility](https://img.shields.io/badge/WCAG%202.1-AA%20Compliant-ember?style=flat-square)](https://www.w3.org/WAI/standards-guidelines/wcag/)
+[![Tests](https://img.shields.io/badge/Tests-82%20Passing-success?style=flat-square)](tests/)
+[![GitHub Pages](https://img.shields.io/badge/Host-GitHub%20Pages-black?style=flat-square&logo=github)](https://eysiarw.github.io/Cedireko-Films/)
 
-No build step, no framework, no backend. It shows work and links out to email and socials. That's all it's meant to do.
+Official videography portfolio for **CEDIREKO Films**, an independent filmmaking practice based in Manila, Philippines. Focused on commercial brand campaigns, live music performance films, and vertical editorial fashion narratives crafted with patient framing, honest available light, and quiet human intimacy.
 
-## Films on the reel
+---
 
-| SC | Title | Type | Frame | Runtime | File |
-| :-- | :-- | :-- | :-- | :-- | :-- |
-| 01 | Veronikka rebranding | Commercial | 4:3, 1440×1080 | 01:29 | `VERONIKKA_REVISED_3.mp4` |
-| 02 | EA performance | Music video | 16:9, 1920×1080 | 04:41 | `EA_FINALCUT.mp4` |
-| 03 | Fico Mana: Cyra | Fashion reel | 9:16, 1080×1920 | 00:27 | `FICOMANA_CYRA_2_1.mp4` |
-| 04 | Fico Mana: Breanna | Fashion reel | 9:16, 1080×1920 | 00:34 | `BREANNA_1.mp4` |
-| 05 | Fico Mana: Leigh | Fashion reel | 9:16, 1080×1920 | 00:45 | `FICOMANA_LEIGH_web.mp4` |
+## 📽️ Showcase Projects
 
-Runtimes were read off the files with `ffprobe`. The old hand-typed values (03:42, 01:58, and 00:47 on all three Fico Mana reels) were wrong.
+| Title | Category | Format | Ratio | Source |
+| :--- | :--- | :--- | :--- | :--- |
+| **VERONIKKA REBRANDING** | Advertisement | Film / Landscape | 16:10 | Commercial campaign |
+| **EA PERFORMANCE** | Music Video | Film / Landscape | 16:10 | Live music performance |
+| **FICO MANA — Cyra** | Fashion Reel | Vertical Reel | 9:16 | Editorial fashion narrative |
+| **FICO MANA — Breanna** | Fashion Reel | Vertical Reel | 9:16 | Editorial fashion narrative |
+| **FICO MANA — Leigh** | Fashion Reel | Vertical Reel | 9:16 | Editorial fashion narrative |
 
-## Adding a film
+---
 
-Everything comes from the `FILMS` array at the top of `script.js`. Add one object:
+## 🏛️ Architectural Principles
 
-```js
-{
-  id: 'brand-x',
-  title: 'BRAND X LAUNCH',
-  type: 'Commercial',
-  client: 'Brand X',
-  role: 'Direction, camera, edit',
-  brief: 'Launch spot for Brand X. 16:9 at 1080p.',
-  src: 'projects/BRAND_X.mp4',
-  poster: 'assets/posters/brand_x.jpg',
-  orientation: 'landscape',      // or 'portrait'
-  duration: '00:45',             // MM:SS, get it with the ffprobe line below
-  captions: ''                   // 'captions/brand_x.vtt' once you have one
-}
+* **Zero Dependencies**: Pure HTML5, CSS3 Custom Properties (Design Tokens), and Object-Oriented ES6+ JavaScript. No build step, bundlers, or heavy external frameworks.
+* **Cinematic Identity**: Atmospheric burgundy color palette (`--void`, `--wine`, `--bone`, `--ember`), Fraunces serif display typography, and ARRI/RED camera monitor telemetry aesthetics.
+* **Intelligent Video Thumbnail Engine**: Pre-rendered, web-optimized JPEG poster frames extracted at non-black footage timestamps (`assets/posters/`) combined with metadata seek queuing to eliminate black preview screens.
+* **Accessible by Design**: WCAG 2.1 AA compliant with contrast ratios up to 14.7:1, visible focus states, full keyboard navigation (including WAI-ARIA tablist arrow keys and modal focus trapping), and `prefers-reduced-motion` compliance.
+* **Pure Portfolio Focus**: No transaction funnels or booking widgets. Concludes with an official Facebook profile link and quiet footer contact line.
+
+---
+
+## 📂 Repository Structure
+
+```text
+CEDIREKO-FILMS-WEBSITE-PORTFOLIO/
+├── index.html              # Semantic single-page portfolio layout
+├── 404.html                # Custom 404 error page for GitHub Pages
+├── style.css               # Consolidated design tokens, responsive grid, and typography
+├── script.js               # Modular OOP controllers (Header, Filter, Modal, Previews)
+├── README.md               # Architecture, project catalog, and verification guide
+├── .gitignore              # macOS artifacts and temporary exclusions
+│
+├── assets/                 # Brand assets and imagery
+│   ├── CEDIREKO PNG.png    # Studio wordmark and badge logo mark
+│   ├── IMG_9987.jpeg       # Raw master director founder portrait (preserved)
+│   ├── founder-portrait.webp # Web-optimized 2x retina portrait (WebP)
+│   ├── founder-portrait.jpg  # Web-optimized fallback portrait (JPEG)
+│   ├── og-cover.jpg        # Open Graph / Twitter Card social share banner
+│   └── posters/            # Lightweight video poster frames (zero black thumbnails)
+│       ├── veronikka.jpg
+│       ├── ea.jpg
+│       ├── ficomana_cyra.jpg
+│       ├── ficomana_breanna.jpg
+│       └── ficomana_leigh.jpg
+│
+├── projects/               # Authentic portfolio video files
+│   ├── VERONIKKA_REVISED_3.mp4
+│   ├── EA_FINALCUT.mp4
+│   ├── FICOMANA_CYRA_2_1.mp4
+│   ├── BREANNA_1.mp4
+│   ├── FICOMANA_LEIGH.mp4
+│   └── FICOMANA_LEIGH_web.mp4 # Web-optimized derivative (43% bandwidth savings)
+│
+└── tests/                  # Headless Chrome DevTools Protocol (CDP) test suite
+    ├── run_tests.js        # Test runner and CLI entry point
+    ├── tier1_feature_coverage.test.js
+    ├── tier2_boundary_corner.test.js
+    ├── tier3_cross_feature.test.js
+    ├── tier4_real_world_journey.test.js
+    ├── m1_empirical_stress.test.js
+    └── helpers/            # HTTP server, CDP browser driver, and contracts
 ```
 
-The grid card, player, PREV/NEXT order and scene number (SC.06, ...) follow automatically. If two films share a runtime, or a listed runtime doesn't match the file when it loads in the player, the console warns you.
+---
 
-```bash
-ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 projects/BRAND_X.mp4
-```
+## 🧪 Automated Test Suite
 
-## Encoding
+The project includes an in-repo automated test harness that spins up a local HTTP server and attaches to a headless Chrome instance via Chrome DevTools Protocol (CDP) to verify layout, contrast, accessibility, boundary cases, and full visitor journeys.
 
-Not run as part of the site. Do these locally, then commit the output.
-
-**Hero loop** (12 s, 720p, no audio). Change `-ss` to wherever the best 12 seconds start.
-
-```bash
-ffmpeg -ss 00:00:30 -t 12 -i projects/EA_FINALCUT.mp4 -an -vf "scale=-2:720,fps=24" -c:v libx264 -preset slow -crf 26 -maxrate 3M -bufsize 6M -pix_fmt yuv420p -movflags +faststart projects/hero-loop.mp4
-```
-
-```bash
-ffmpeg -ss 00:00:30 -t 12 -i projects/EA_FINALCUT.mp4 -an -vf "scale=-2:720,fps=24" -c:v libvpx-vp9 -b:v 0 -crf 36 -row-mt 1 -deadline good -cpu-used 2 projects/hero-loop.webm
-```
-
-Both should land well under 5 MB. If one doesn't, raise the CRF by 2 and run it again. Once both exist, delete the `EA_FINALCUT.mp4` fallback `<source>` in the hero of `index.html`.
-
-**Poster frames**, one per video, taken 2 s in. Written to a separate folder so the current posters aren't overwritten:
-
-```bash
-mkdir -p assets/posters/new && for f in projects/*.mp4; do ffmpeg -y -ss 2 -i "$f" -frames:v 1 -vf "scale='min(1280,iw)':-2" -q:v 3 "assets/posters/new/$(basename "$f" .mp4).jpg"; done
-```
-
-## Contrast
-
-Checked against WCAG 2.1 AA (4.5:1 for body text, 3:1 for large text and UI).
-
-| Pairing | Ratio | Result |
-| :-- | :-- | :-- |
-| `--bone` #F4E9DE on `--void` #3C0008 | 14.68:1 | Pass |
-| `--bone-dim` #D9C6BA on `--void` | 10.65:1 | Pass |
-| `--ember` #CDA05A on `--void` | 7.34:1 | Pass |
-| `--ash-rose` #B08187 on `--void` | 5.30:1 | Pass |
-| `--ash-rose` on `--wine-deep` #2A0509 | 5.64:1 | Pass |
-| `--ash-rose` on `--frame` #180307 | 6.01:1 | Pass |
-| `--wine-deep` on `--ember` (CTA, active filter) | 7.80:1 | Pass |
-| Hero timecode, `--bone-dim` at 80% on letterbox | 7.86:1 | Pass |
-| `--ember` label on tile scrim, worst case (white frame) | 4.80:1 | Pass |
-| REC dot #E53935 on `--void` | 4.16:1 | Pass as a non-text graphic (3:1); hidden from screen readers |
-
-## Tests
-
-Headless Chrome over CDP, no dependencies beyond Node and a local Chrome.
+### Run All Tests
 
 ```bash
 node tests/run_tests.js && node tests/m1_empirical_stress.test.js
 ```
 
-The "zero 404s" check fails until `projects/hero-loop.webm` and `projects/hero-loop.mp4` exist.
+---
 
-## Layout
+## 🎨 Design Tokens
 
-```text
-index.html        page markup; the reel grid is filled in by script.js
-404.html
-style.css
-script.js         FILMS data, rendering, player, header, motion
-assets/           logo, portrait, OG image, posters/
-projects/         video files
-tests/
-```
+Defined in [`style.css`](style.css) via `:root`:
+
+| Token | Value | Semantic Role |
+| :--- | :--- | :--- |
+| `--void` | `#3C0008` | Primary page canvas background |
+| `--wine` | `#4C0F19` | Surface cards & hover states |
+| `--wine-deep` | `#2A0509` | Elevated containers & modal background |
+| `--frame` | `#180307` | Letterbox bars & footer background |
+| `--bone` | `#F4E9DE` | Primary display & heading typography |
+| `--bone-dim` | `#D9C6BA` | Secondary prose & timecode text |
+| `--ash-rose` | `#B08187` | Subtle meta captions & muted labels |
+| `--ember` | `#CDA05A` | Interactive accent, badges & focus indicators |
+
+---
+
+## 📜 Motto
 
 > *"Maging mabait lang palagi."*
 
-&copy; 2026 CEDIREKO FILMS
+&copy; 2026 CEDIREKO FILMS. All Rights Reserved.

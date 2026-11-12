@@ -1,189 +1,26 @@
-/*
- * CEDIREKO FILMS
- *
- * Adding a film: append one object to FILMS. The grid, the player and
- * PREV/NEXT order all come from this array.
- *
- *   id           unique slug
- *   title        shown on the slate, uppercase by convention
- *   type         Commercial | Music video | Fashion reel | ...
- *   client, role, brief
- *   src, poster  paths under projects/ and assets/posters/
- *   orientation  'landscape' | 'portrait'
- *   duration     MM:SS, read off the file with ffprobe (see README)
- *   captions     path to a .vtt, or '' if there isn't one yet
- *   series       optional key into SERIES, groups vertical runs together
+/**
+ * ============================================================================
+ * CEDIREKO FILMS — Client Application Controllers
+ * Architecture: Object-Oriented JavaScript (ES6+)
+ * Milestone: M1 (Navigation, Scaffolding & Design Tokens)
+ * ============================================================================
  */
 
-const FILMS = [
-  {
-    id: 'veronikka',
-    title: 'VERONIKKA REBRANDING',
-    type: 'Commercial',
-    client: 'Veronikka',
-    role: 'Direction, camera, edit', // EDIT: confirm
-    brief: 'Rebrand spot for Veronikka. Shot 4:3 at 1440×1080.', // EDIT: add what was shot
-    src: 'projects/VERONIKKA_REVISED_3.mp4',
-    poster: 'assets/posters/veronikka.jpg',
-    orientation: 'landscape',
-    duration: '01:29',
-    captions: ''
-  },
-  {
-    id: 'ea',
-    title: 'EA PERFORMANCE',
-    type: 'Music video',
-    client: 'EA', // EDIT: full artist or label name
-    role: 'Direction, camera, edit', // EDIT: confirm
-    brief: 'Performance video for EA. 16:9 at 1080p.', // EDIT: add venue or setup
-    src: 'projects/EA_FINALCUT.mp4',
-    poster: 'assets/posters/ea.jpg',
-    orientation: 'landscape',
-    duration: '04:41',
-    captions: ''
-  },
-  {
-    id: 'ficomana-cyra',
-    title: 'CYRA',
-    type: 'Fashion reel',
-    client: 'Fico Mana',
-    role: 'Direction, camera, edit', // EDIT: confirm
-    brief: 'Part 1 of the Fico Mana vertical series, with Cyra. 9:16 at 1080×1920.', // EDIT
-    src: 'projects/FICOMANA_CYRA_2_1.mp4',
-    poster: 'assets/posters/ficomana_cyra.jpg',
-    orientation: 'portrait',
-    duration: '00:27',
-    captions: '',
-    series: 'ficomana'
-  },
-  {
-    id: 'ficomana-breanna',
-    title: 'BREANNA',
-    type: 'Fashion reel',
-    client: 'Fico Mana',
-    role: 'Direction, camera, edit', // EDIT: confirm
-    brief: 'Part 2 of the Fico Mana vertical series, with Breanna. 9:16 at 1080×1920.', // EDIT
-    src: 'projects/BREANNA_1.mp4',
-    poster: 'assets/posters/ficomana_breanna.jpg',
-    orientation: 'portrait',
-    duration: '00:34',
-    captions: '',
-    series: 'ficomana'
-  },
-  {
-    id: 'ficomana-leigh',
-    title: 'LEIGH',
-    type: 'Fashion reel',
-    client: 'Fico Mana',
-    role: 'Direction, camera, edit', // EDIT: confirm
-    brief: 'Part 3 of the Fico Mana vertical series, with Leigh. 9:16 at 1080×1920.', // EDIT
-    src: 'projects/FICOMANA_LEIGH_web.mp4',
-    poster: 'assets/posters/ficomana_leigh.jpg',
-    orientation: 'portrait',
-    duration: '00:45',
-    captions: '',
-    series: 'ficomana'
-  }
-];
-
-const SERIES = {
-  ficomana: {
-    label: 'Vertical series',
-    title: 'FICO MANA',
-    note: 'One label, three reels. Cyra, Breanna and Leigh each got their own.' // EDIT
-  }
-};
-
-document.documentElement.classList.add('js');
-
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (c) => ({
-  '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-}[c]));
-
-const sceneLabel = (index) => `SC.${String(index + 1).padStart(2, '0')}`;
-
-const toSeconds = (mmss) => {
-  const [m, s] = String(mmss).split(':').map(Number);
-  return (m || 0) * 60 + (s || 0);
-};
-
-// Two or more films with an identical runtime almost always means one value
-// got copied across entries (this happened before: three Fico Mana reels all said 00:47).
-function warnOnSuspectDurations(films) {
-  const seen = new Map();
-  films.forEach((film) => {
-    if (!/^\d{2}:\d{2}$/.test(film.duration)) {
-      console.warn(`[FILMS] ${film.id}: duration "${film.duration}" is not MM:SS`);
-    }
-    seen.set(film.duration, [...(seen.get(film.duration) || []), film.id]);
-  });
-  seen.forEach((ids, duration) => {
-    if (ids.length > 1) {
-      console.warn(`[FILMS] ${ids.join(', ')} all list ${duration}. Probably a placeholder, check with ffprobe.`);
-    }
-  });
-}
-
-function renderReel(grid, films) {
-  if (!grid) return;
-  let landscapeCount = 0;
-  const seriesShown = new Set();
-
-  grid.innerHTML = films.map((film, index) => {
-    let lead = '';
-    if (film.series && SERIES[film.series] && !seriesShown.has(film.series)) {
-      seriesShown.add(film.series);
-      const s = SERIES[film.series];
-      lead = `
-        <div class="reel-series-header" data-series="${escapeHtml(film.series)}">
-          <p class="eyebrow">${escapeHtml(s.label)}</p>
-          <h3 class="reel-series-title">${escapeHtml(s.title)}</h3>
-          <p class="reel-series-desc">${escapeHtml(s.note)}</p>
-        </div>`;
-    }
-
-    // The first two wide films sit unevenly on purpose: one big, one smaller and dropped.
-    let placement = '';
-    if (film.orientation === 'landscape') {
-      placement = ['reel-card--lead', 'reel-card--drop'][landscapeCount] || '';
-      landscapeCount += 1;
-    }
-
-    return `${lead}
-      <article class="reel-card ${placement}" data-orientation="${escapeHtml(film.orientation)}" data-index="${index}" data-scene="${sceneLabel(index)}">
-        <button type="button" class="reel-frame" aria-label="Play ${escapeHtml(film.title)}, ${escapeHtml(film.type)}, ${escapeHtml(film.duration)}">
-          <video class="reel-video" src="${escapeHtml(film.src)}" poster="${escapeHtml(film.poster)}" muted loop playsinline preload="none" tabindex="-1" aria-hidden="true">
-            <a href="${escapeHtml(film.src)}">Open ${escapeHtml(film.title)} (MP4)</a>
-          </video>
-          <span class="reel-tc" aria-hidden="true"><span>${escapeHtml(film.duration)}</span></span>
-          <span class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8V4z"/></svg></span>
-          <span class="reel-slate" aria-hidden="true">
-            <span class="reel-scene">${sceneLabel(index)}</span>
-            <span class="reel-cat">${escapeHtml(film.type)}</span>
-          </span>
-        </button>
-        <h3 class="reel-title">${escapeHtml(film.title)}</h3>
-        <dl class="reel-credit">
-          <div><dt>Client</dt><dd>${escapeHtml(film.client)}</dd></div>
-          <div><dt>Role</dt><dd>${escapeHtml(film.role)}</dd></div>
-        </dl>
-        <p class="reel-brief">${escapeHtml(film.brief)}</p>
-      </article>`;
-  }).join('');
-}
-
+/**
+ * HeaderNavController
+ * Encapsulates sticky header scroll observation, mobile drawer state machine,
+ * ARIA synchronization, inert isolation, and smooth anchor navigation.
+ */
 class HeaderNavController {
   constructor(options = {}) {
     this.options = Object.assign({
       headerSelector: '.site-header',
-      toggleSelector: '#mobile-nav-toggle',
-      closeSelector: '#mobile-nav-close',
-      navSelector: '#mobile-nav',
+      toggleSelector: '#mobile-nav-toggle, .site-header__burger, .menu-toggle',
+      closeSelector: '#mobile-nav-close, .mobile-nav__close',
+      navSelector: '#mobile-nav, .mobile-nav',
       panelSelector: '.mobile-nav__panel',
       backdropSelector: '.mobile-nav__backdrop',
-      linksSelector: '.site-header__nav-link, .mobile-nav__link',
+      linksSelector: '.site-header__nav-link, .mobile-nav__link, .site-nav a, .mobile-nav a',
       scrollThreshold: 80,
       scrolledClass: 'site-header--scrolled',
       openClass: 'is-open',
@@ -201,6 +38,7 @@ class HeaderNavController {
     this.isOpen = false;
     this.isTicking = false;
 
+    // Bind event handlers to maintain instance execution context
     this.handleScroll = this.handleScroll.bind(this);
     this.handleToggleClick = this.handleToggleClick.bind(this);
     this.handleCloseClick = this.handleCloseClick.bind(this);
@@ -212,15 +50,20 @@ class HeaderNavController {
     this.init();
   }
 
+  /**
+   * Initializes event bindings and sets initial state
+   */
   init() {
     if (!this.header) return;
 
+    // Initialize toggle button ARIA attributes
     if (this.toggleBtn) {
       this.toggleBtn.setAttribute('aria-expanded', 'false');
       this.toggleBtn.setAttribute('aria-label', 'Open navigation menu');
       this.toggleBtn.addEventListener('click', this.handleToggleClick);
     }
 
+    // Initialize mobile drawer accessibility attributes
     if (this.mobileNav) {
       this.mobileNav.setAttribute('aria-hidden', 'true');
       if ('inert' in HTMLElement.prototype) {
@@ -228,55 +71,96 @@ class HeaderNavController {
       }
     }
 
-    this.closeBtn?.addEventListener('click', this.handleCloseClick);
-    this.backdrop?.addEventListener('click', this.handleCloseClick);
+    // Bind dedicated close button inside drawer
+    if (this.closeBtn) {
+      this.closeBtn.addEventListener('click', this.handleCloseClick);
+    }
 
+    // Bind backdrop click to dismiss
+    if (this.backdrop) {
+      this.backdrop.addEventListener('click', this.handleCloseClick);
+    }
+
+    // Passive scroll listener for 60/120fps execution
     window.addEventListener('scroll', this.handleScroll, { passive: true });
+
+    // Global document interaction listeners
     document.addEventListener('keydown', this.handleKeyDown);
     document.addEventListener('click', this.handleDocumentClick);
     window.addEventListener('resize', this.handleResize, { passive: true });
 
-    this.navLinks.forEach(link => link.addEventListener('click', this.handleLinkClick));
+    // Auto-close drawer on internal link clicks
+    this.navLinks.forEach(link => {
+      link.addEventListener('click', this.handleLinkClick);
+    });
 
-    // A reload mid-page should not flash the transparent header.
+    // Check scroll position immediately on page load / refresh
     this.updateScrollState();
   }
 
+  /**
+   * Throttles scroll evaluation using requestAnimationFrame
+   */
   handleScroll() {
-    if (this.isTicking) return;
-    this.isTicking = true;
-    window.requestAnimationFrame(() => {
-      this.updateScrollState();
-      this.isTicking = false;
-    });
+    if (!this.isTicking) {
+      this.isTicking = true;
+      window.requestAnimationFrame(() => {
+        this.updateScrollState();
+        this.isTicking = false;
+      });
+    }
   }
 
+  /**
+   * Synchronizes scrolled class with window scroll position
+   */
   updateScrollState() {
     if (!this.header) return;
-    const y = window.pageYOffset || document.documentElement.scrollTop || 0;
-    const shouldBeScrolled = y > this.options.scrollThreshold;
+    const currentScrollY = window.pageYOffset || document.documentElement.scrollTop || 0;
+    const shouldBeScrolled = currentScrollY > this.options.scrollThreshold;
+
     if (this.header.classList.contains(this.options.scrolledClass) !== shouldBeScrolled) {
       this.header.classList.toggle(this.options.scrolledClass, shouldBeScrolled);
     }
   }
 
+  /**
+   * Handles toggle button interactions
+   */
   handleToggleClick(event) {
-    event?.preventDefault();
-    event?.stopPropagation();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.toggleMobileMenu();
   }
 
+  /**
+   * Handles explicit close button or backdrop clicks
+   */
   handleCloseClick(event) {
-    event?.preventDefault();
-    event?.stopPropagation();
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     this.closeMobileMenu();
   }
 
+  /**
+   * Inverts drawer state
+   */
   toggleMobileMenu() {
-    if (this.isOpen) this.closeMobileMenu();
-    else this.openMobileMenu();
+    if (this.isOpen) {
+      this.closeMobileMenu();
+    } else {
+      this.openMobileMenu();
+    }
   }
 
+  /**
+   * Returns background elements that must be isolated with inert when drawer is open
+   * @returns {HTMLElement[]}
+   */
   getBackgroundElements() {
     if (!this.backgroundElements) {
       this.backgroundElements = [
@@ -289,8 +173,12 @@ class HeaderNavController {
     return this.backgroundElements;
   }
 
+  /**
+   * Opens drawer, locks scroll, and configures accessibility
+   */
   openMobileMenu() {
     if (this.isOpen || !this.mobileNav) return;
+
     this.isOpen = true;
 
     if (this.toggleBtn) {
@@ -308,12 +196,20 @@ class HeaderNavController {
 
     document.body.classList.add(this.options.bodyLockClass);
 
-    if (this.closeBtn) this.closeBtn.focus();
-    else this.panel?.focus();
+    // Direct focus to close button or panel
+    if (this.closeBtn) {
+      this.closeBtn.focus();
+    } else if (this.panel) {
+      this.panel.focus();
+    }
   }
 
+  /**
+   * Closes drawer, releases scroll lock, and restores focus
+   */
   closeMobileMenu() {
     if (!this.isOpen) return;
+
     this.isOpen = false;
 
     if (this.toggleBtn) {
@@ -332,9 +228,16 @@ class HeaderNavController {
     }
 
     document.body.classList.remove(this.options.bodyLockClass);
-    this.toggleBtn?.focus();
+
+    // Return focus to toggle button for keyboard navigation continuity
+    if (this.toggleBtn) {
+      this.toggleBtn.focus();
+    }
   }
 
+  /**
+   * Captures Escape key to dismiss drawer (WCAG 2.1 AA)
+   */
   handleKeyDown(event) {
     if (event.key === 'Escape' && this.isOpen) {
       event.preventDefault();
@@ -342,31 +245,63 @@ class HeaderNavController {
     }
   }
 
+  /**
+   * Dismisses menu when clicking outside panel and toggle
+   */
   handleDocumentClick(event) {
     if (!this.isOpen) return;
-    const insidePanel = this.panel && this.panel.contains(event.target);
-    const onToggle = this.toggleBtn && this.toggleBtn.contains(event.target);
-    if (!insidePanel && !onToggle) this.closeMobileMenu();
+
+    const clickedInsidePanel = this.panel && this.panel.contains(event.target);
+    const clickedToggle = this.toggleBtn && this.toggleBtn.contains(event.target);
+
+    if (!clickedInsidePanel && !clickedToggle) {
+      this.closeMobileMenu();
+    }
   }
 
+  /**
+   * Automatically closes drawer upon clicking destination anchors
+   */
   handleLinkClick(event) {
     const href = event.currentTarget.getAttribute('href');
-    if (href && href.startsWith('#') && this.isOpen) this.closeMobileMenu();
+    if (href && href.startsWith('#')) {
+      if (this.isOpen) {
+        this.closeMobileMenu();
+      }
+    }
   }
 
+  /**
+   * Closes mobile drawer if viewport exceeds mobile breakpoint
+   */
   handleResize() {
-    if (this.isOpen && window.innerWidth >= 768) this.closeMobileMenu();
+    if (this.isOpen && window.innerWidth >= 768) {
+      this.closeMobileMenu();
+    }
   }
 
+  /**
+   * Cleanly tears down all event listeners and state
+   */
   destroy() {
     window.removeEventListener('scroll', this.handleScroll);
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('click', this.handleDocumentClick);
     window.removeEventListener('resize', this.handleResize);
-    this.toggleBtn?.removeEventListener('click', this.handleToggleClick);
-    this.closeBtn?.removeEventListener('click', this.handleCloseClick);
-    this.backdrop?.removeEventListener('click', this.handleCloseClick);
-    this.navLinks.forEach(link => link.removeEventListener('click', this.handleLinkClick));
+
+    if (this.toggleBtn) {
+      this.toggleBtn.removeEventListener('click', this.handleToggleClick);
+    }
+    if (this.closeBtn) {
+      this.closeBtn.removeEventListener('click', this.handleCloseClick);
+    }
+    if (this.backdrop) {
+      this.backdrop.removeEventListener('click', this.handleCloseClick);
+    }
+
+    this.navLinks.forEach(link => {
+      link.removeEventListener('click', this.handleLinkClick);
+    });
 
     if ('inert' in HTMLElement.prototype) {
       this.getBackgroundElements().forEach(el => el.removeAttribute('inert'));
@@ -378,33 +313,56 @@ class HeaderNavController {
   }
 }
 
+/**
+ * ReelFilterController
+ * Encapsulates multi-format filter bar state, tablist ARIA synchronization,
+ * and responsive grid view switching.
+ */
 class ReelFilterController {
   #grid;
   #buttons;
 
-  constructor() {
-    this.#grid = document.querySelector('.reel-grid');
-    this.#buttons = Array.from(document.querySelectorAll('.reel-toggle-btn'));
+  constructor(options = {}) {
+    this.options = Object.assign({
+      gridSelector: '.reel-grid',
+      buttonsSelector: '.reel-toggle-btn, .filter-btn',
+      activeClass: 'is-active'
+    }, options);
+
+    this.#grid = document.querySelector(this.options.gridSelector);
+    this.#buttons = document.querySelectorAll(this.options.buttonsSelector);
+
+    this.init();
+  }
+
+  init() {
     if (!this.#grid || !this.#buttons.length) return;
 
     this.#buttons.forEach((btn, index) => {
-      btn.addEventListener('click', () => this.setView(btn.dataset.view, btn));
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        this.setView(view, btn);
+      });
 
+      // Keyboard arrow navigation across tablist (WAI-ARIA compliance)
       btn.addEventListener('keydown', (e) => {
-        const last = this.#buttons.length - 1;
-        const target = {
-          ArrowRight: index === last ? 0 : index + 1,
-          ArrowDown: index === last ? 0 : index + 1,
-          ArrowLeft: index === 0 ? last : index - 1,
-          ArrowUp: index === 0 ? last : index - 1,
-          Home: 0,
-          End: last
-        }[e.key];
-        if (target === undefined) return;
-        e.preventDefault();
-        const next = this.#buttons[target];
-        next.focus();
-        this.setView(next.dataset.view, next);
+        let targetIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          targetIndex = (index + 1) % this.#buttons.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          targetIndex = (index - 1 + this.#buttons.length) % this.#buttons.length;
+        } else if (e.key === 'Home') {
+          targetIndex = 0;
+        } else if (e.key === 'End') {
+          targetIndex = this.#buttons.length - 1;
+        }
+
+        if (targetIndex >= 0) {
+          e.preventDefault();
+          const targetBtn = this.#buttons[targetIndex];
+          targetBtn.focus();
+          this.setView(targetBtn.dataset.view, targetBtn);
+        }
       });
     });
   }
@@ -412,95 +370,109 @@ class ReelFilterController {
   setView(view, activeBtn) {
     if (!this.#grid) return;
     this.#grid.dataset.view = view;
+
     this.#buttons.forEach(btn => {
-      const selected = btn === activeBtn || (!activeBtn && btn.dataset.view === view);
-      btn.classList.toggle('is-active', selected);
-      btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+      const isSelected = btn === activeBtn || (!activeBtn && btn.dataset.view === view);
+      btn.classList.toggle(this.options.activeClass, isSelected);
+      btn.setAttribute('aria-selected', isSelected ? 'true' : 'false');
     });
   }
 }
 
+/**
+ * VideoModalPlayerController
+ * Manages native HTML5 <dialog> modal player lifecycle, video buffering,
+ * sequential transport navigation (prev/next), keyboard accessibility,
+ * scroll locking, and light dismiss.
+ */
 class VideoModalPlayerController {
   #dialog;
   #video;
-  #track;
-  #fallback;
-  #grid;
-  #fields;
+  #title;
+  #cat;
+  #tc;
+  #scene;
   #closeBtn;
   #prevBtn;
   #nextBtn;
-  #announcer;
-  #currentIndex = -1;
-  #lastActiveElement = null;
-  #mouseDownInside = false;
+  #cards;
+  #currentIndex;
+  #lastActiveElement;
+  #mouseDownInside;
 
-  constructor(films) {
-    this.films = films;
+  constructor() {
     this.#dialog = document.getElementById('video-modal');
     if (!this.#dialog) return;
 
-    const $ = (sel) => this.#dialog.querySelector(sel);
-    this.#video = $('#modal-video');
-    this.#track = $('#modal-captions');
-    this.#fallback = $('#modal-fallback');
-    this.#closeBtn = $('.modal-close');
-    this.#prevBtn = $('#modal-prev-btn');
-    this.#nextBtn = $('#modal-next-btn');
-    this.#announcer = $('#modal-announcer');
-    this.#grid = document.getElementById('reel-grid');
-    this.#fields = {
-      title: $('#modal-title'),
-      type: $('#modal-cat'),
-      duration: $('#modal-tc'),
-      scene: $('#modal-scene'),
-      client: $('#modal-client'),
-      role: $('#modal-role'),
-      brief: $('#modal-brief')
-    };
+    this.#video = this.#dialog.querySelector('video');
+    this.#title = this.#dialog.querySelector('#modal-title');
+    this.#cat = this.#dialog.querySelector('#modal-cat');
+    this.#tc = this.#dialog.querySelector('#modal-tc');
+    this.#scene = this.#dialog.querySelector('#modal-scene');
+    this.#closeBtn = this.#dialog.querySelector('.modal-close, button[aria-label*="close" i]');
+    this.#prevBtn = this.#dialog.querySelector('#modal-prev-btn, .modal-prev');
+    this.#nextBtn = this.#dialog.querySelector('#modal-next-btn, .modal-next');
 
-    this.#bind();
+    this.#cards = Array.from(document.querySelectorAll('.reel-card'));
+    this.#currentIndex = -1;
+    this.#lastActiveElement = null;
+    this.#mouseDownInside = false;
+
+    this.navigate = this.navigate.bind(this);
+
+    this.init();
   }
 
-  #bind() {
-    this.#closeBtn?.addEventListener('click', () => this.close());
+  init() {
+    if (!this.#dialog) return;
 
+    // Close button dismiss
+    this.#closeBtn?.addEventListener('click', () => {
+      this.close();
+    });
+
+    // Transport buttons: previous / next project
     this.#prevBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.navigate(-1);
     });
+
     this.#nextBtn?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.navigate(1);
     });
 
-    this.#dialog.addEventListener('close', () => this.#cleanupMedia());
-
-    document.addEventListener('keydown', (e) => {
-      if (!this.#dialog.open || e.altKey || e.ctrlKey || e.metaKey) return;
-      // The native cancel event covers real Escape presses, but not every browser
-      // (or synthetic event) goes through it.
-      if (e.key === 'Escape') {
-        this.close();
-        return;
-      }
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      // Leave arrows alone where they already mean something: text fields, and the
-      // video element itself, where they scrub.
-      const t = e.target;
-      if (t && (t.closest?.('input, textarea, select, [contenteditable=""], [contenteditable="true"]') || t.tagName === 'VIDEO')) return;
-      e.preventDefault();
-      this.navigate(e.key === 'ArrowLeft' ? -1 : 1);
+    // Native cancel event (e.g. Esc key)
+    this.#dialog.addEventListener('cancel', () => {
+      this.#cleanupMedia();
     });
 
+    // Keyboard controls when modal is active: Escape, ArrowLeft, ArrowRight
+    document.addEventListener('keydown', (e) => {
+      if (!this.#dialog || !this.#dialog.open) return;
+
+      if (e.key === 'Escape') {
+        this.close();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        this.navigate(-1);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        this.navigate(1);
+      }
+    });
+
+    // Modal keyboard focus trap (WCAG 2.1 AA dialog pattern)
     this.#dialog.addEventListener('keydown', (e) => {
       if (e.key !== 'Tab' || !this.#dialog.open) return;
       const focusables = Array.from(
-        this.#dialog.querySelectorAll('button, [href], video, [tabindex]:not([tabindex="-1"])')
+        this.#dialog.querySelectorAll('button, [href], input, select, textarea, video, [tabindex]:not([tabindex="-1"])')
       ).filter(el => !el.hasAttribute('disabled') && el.offsetParent !== null);
+
       if (!focusables.length) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
+
       if (e.shiftKey && document.activeElement === first) {
         e.preventDefault();
         last.focus();
@@ -510,111 +482,137 @@ class VideoModalPlayerController {
       }
     });
 
-    // A drag that starts on the video and ends on the backdrop is a scrub, not a dismiss.
+    // Native close event
+    this.#dialog.addEventListener('close', () => {
+      this.#cleanupMedia();
+    });
+
+    // Backdrop dismissal tracking
     this.#dialog.addEventListener('mousedown', (e) => {
-      const r = this.#dialog.getBoundingClientRect();
-      this.#mouseDownInside = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+      const rect = this.#dialog.getBoundingClientRect();
+      this.#mouseDownInside = (
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      );
     });
 
     this.#dialog.addEventListener('click', (e) => {
       if (e.target === this.#dialog) {
-        const r = this.#dialog.getBoundingClientRect();
-        const outside = e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom;
-        if (outside && !this.#mouseDownInside) this.close();
+        const rect = this.#dialog.getBoundingClientRect();
+        const isClickOutside = (
+          e.clientX < rect.left ||
+          e.clientX > rect.right ||
+          e.clientY < rect.top ||
+          e.clientY > rect.bottom
+        );
+        // Dismiss only when click is outside AND mousedown did not start inside
+        if (isClickOutside && !this.#mouseDownInside) {
+          this.close();
+        }
       }
       this.#mouseDownInside = false;
     });
 
-    this.#dialog.querySelector('.modal-inner')?.addEventListener('click', (e) => e.stopPropagation());
-
-    this.#video?.addEventListener('loadedmetadata', () => {
-      const film = this.films[this.#currentIndex];
-      if (!film || !Number.isFinite(this.#video.duration)) return;
-      const drift = Math.abs(this.#video.duration - toSeconds(film.duration));
-      if (drift > 1.5) {
-        console.warn(`[FILMS] ${film.id}: listed as ${film.duration}, file runs ${this.#video.duration.toFixed(1)}s`);
-      }
+    // Stop click events inside modal content from reaching dialog backdrop
+    const modalContent = this.#dialog.querySelector('.modal-dialog-content, .modal-inner');
+    modalContent?.addEventListener('click', (e) => {
+      e.stopPropagation();
     });
   }
 
-  // PREV/NEXT stays inside whatever the filter is showing. If the open film
-  // isn't part of that set (filter changed mid-playback), fall back to everything.
-  #playableIndexes() {
-    const all = this.films.map((_, i) => i);
-    const view = this.#grid?.dataset.view || 'all';
-    if (view === 'all') return all;
-    const list = all.filter(i => this.films[i].orientation === view);
-    return list.includes(this.#currentIndex) ? list : all;
-  }
-
-  #neighbour(delta) {
-    const list = this.#playableIndexes();
-    const pos = Math.max(0, list.indexOf(this.#currentIndex));
-    return list[(pos + delta + list.length) % list.length];
-  }
-
+  /**
+   * Navigates sequentially across the reel items
+   * @param {number} delta - (-1 for previous, +1 for next)
+   */
   navigate(delta) {
-    if (this.#currentIndex < 0 || !this.films.length) return;
-    this.open(this.#neighbour(delta));
+    if (!this.#cards.length || this.#currentIndex < 0) return;
+    const total = this.#cards.length;
+    const nextIndex = (this.#currentIndex + delta + total) % total;
+    this.open(this.#cards[nextIndex]);
   }
 
-  open(index) {
-    const film = this.films[index];
-    if (!this.#dialog || !film) return;
+  open(cardOrIndex) {
+    if (!this.#dialog) return;
 
-    if (!this.#dialog.open) this.#lastActiveElement = document.activeElement;
-    this.#currentIndex = index;
-
-    const f = this.#fields;
-    f.title.textContent = film.title;
-    f.type.textContent = film.type;
-    f.duration.textContent = film.duration;
-    f.scene.textContent = sceneLabel(index);
-    f.client.textContent = film.client;
-    f.role.textContent = film.role;
-    f.brief.textContent = film.brief;
-
-    this.#dialog.dataset.orientation = film.orientation;
-
-    const prev = this.films[this.#neighbour(-1)];
-    const next = this.films[this.#neighbour(1)];
-    this.#prevBtn?.setAttribute('aria-label', `Previous film: ${prev.title}`);
-    this.#nextBtn?.setAttribute('aria-label', `Next film: ${next.title}`);
-
-    if (this.#fallback) this.#fallback.href = film.src;
-    if (this.#track) {
-      if (film.captions) this.#track.src = film.captions;
-      else this.#track.removeAttribute('src');
+    if (!this.#cards.length) {
+      this.#cards = Array.from(document.querySelectorAll('.reel-card'));
     }
 
-    if (this.#video) {
-      this.#video.poster = film.poster;
-      this.#video.src = film.src;
+    let card;
+    if (typeof cardOrIndex === 'number') {
+      this.#currentIndex = (cardOrIndex + this.#cards.length) % this.#cards.length;
+      card = this.#cards[this.#currentIndex];
+    } else {
+      card = cardOrIndex;
+      this.#currentIndex = this.#cards.indexOf(card);
+    }
+
+    if (!card) return;
+
+    if (!this.#dialog.open) {
+      this.#lastActiveElement = document.activeElement;
+    }
+
+    const videoEl = card.querySelector('.reel-video, video');
+    const src = videoEl?.dataset.src || videoEl?.src || '';
+    const title = card.querySelector('.reel-title, h3')?.textContent?.trim() || 'FEATURED WORK';
+    const cat = card.querySelector('.reel-cat')?.textContent?.trim() || 'COMMERCIAL';
+    const tc = card.querySelector('.reel-tc span:last-child')?.textContent?.trim() || '00:00';
+    const scene = card.dataset.scene || card.querySelector('.reel-scene')?.textContent?.trim() || `SC.0${this.#currentIndex + 1}`;
+
+    if (this.#title) this.#title.textContent = title;
+    if (this.#cat) this.#cat.textContent = cat;
+    if (this.#tc) this.#tc.textContent = tc;
+    if (this.#scene) this.#scene.textContent = scene;
+
+    // Structured metadata synchronization
+    const specsContainer = this.#dialog.querySelector('#modal-specs');
+    if (specsContainer) {
+      specsContainer.innerHTML = '';
+      const details = card.querySelectorAll('.reel-detail');
+      details.forEach(detail => {
+        const span = document.createElement('span');
+        span.className = 'modal-spec-item';
+        span.innerHTML = detail.innerHTML;
+        specsContainer.appendChild(span);
+      });
+    }
+
+    if (this.#video && src) {
+      this.#video.src = src;
+      const poster = card.querySelector('.reel-video')?.getAttribute('poster');
+      if (poster) {
+        this.#video.setAttribute('poster', poster);
+      } else {
+        this.#video.removeAttribute('poster');
+      }
       this.#video.load();
       this.#video.play().catch(() => {});
-    }
-
-    // Clearing first makes screen readers re-announce even when the title repeats.
-    if (this.#announcer) {
-      this.#announcer.textContent = '';
-      requestAnimationFrame(() => {
-        this.#announcer.textContent = `Now playing ${film.title}, ${film.type}, ${film.duration}`;
-      });
     }
 
     document.body.style.overflow = 'hidden';
 
     if (!this.#dialog.open) {
-      if (typeof this.#dialog.showModal === 'function') this.#dialog.showModal();
-      else this.#dialog.setAttribute('open', '');
+      if (typeof this.#dialog.showModal === 'function') {
+        this.#dialog.showModal();
+      } else {
+        this.#dialog.setAttribute('open', '');
+      }
       this.#closeBtn?.focus();
     }
   }
 
   close() {
-    if (!this.#dialog?.open) return;
-    if (typeof this.#dialog.close === 'function') this.#dialog.close();
-    else this.#dialog.removeAttribute('open');
+    if (!this.#dialog || !this.#dialog.open) return;
+
+    if (typeof this.#dialog.close === 'function') {
+      this.#dialog.close();
+    } else {
+      this.#dialog.removeAttribute('open');
+    }
+
     this.#cleanupMedia();
   }
 
@@ -624,164 +622,251 @@ class VideoModalPlayerController {
       this.#video.removeAttribute('src');
       this.#video.load();
     }
+
     document.body.style.overflow = '';
-    this.#lastActiveElement?.focus?.();
+
+    if (this.#lastActiveElement && typeof this.#lastActiveElement.focus === 'function') {
+      this.#lastActiveElement.focus();
+    }
     this.#lastActiveElement = null;
     this.#currentIndex = -1;
   }
 }
 
-// Hover previews only on real pointers, and never when the visitor asked for less motion.
+/**
+ * MediaPreviewController
+ * Handles viewport lazy-loading and desktop hover preview playback.
+ * Enforces single-video active playback across all preview cards.
+ */
 class MediaPreviewController {
-  #grid;
-  #player;
-  #playing = null;
+  #cards;
+  #videoModal;
+  #observer;
+  #currentlyPlaying;
 
-  constructor(player) {
-    this.#grid = document.getElementById('reel-grid');
-    this.#player = player;
-    if (!this.#grid) return;
+  constructor(videoModal) {
+    this.#cards = document.querySelectorAll('.reel-card');
+    this.#videoModal = videoModal;
+    this.#currentlyPlaying = null;
 
-    this.#grid.addEventListener('click', (e) => {
-      const card = e.target.closest('.reel-card[data-index]');
-      if (!card) return;
-      e.preventDefault();
-      this.#stop();
-      this.#player?.open(Number(card.dataset.index));
-    });
-
-    const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    if (!canHover) return;
-
-    this.#grid.querySelectorAll('.reel-card').forEach((card) => {
-      const video = card.querySelector('.reel-video');
-      if (!video) return;
-      card.addEventListener('mouseenter', () => {
-        if (reducedMotion.matches) return;
-        if (this.#playing && this.#playing !== video) this.#stop();
-        this.#playing = video;
-        video.play().catch(() => {});
-      });
-      card.addEventListener('mouseleave', () => {
-        if (this.#playing === video) this.#stop();
-      });
-    });
+    this.init();
   }
 
-  #stop() {
-    const video = this.#playing;
-    if (!video) return;
-    video.pause();
-    // load() drops back to the poster frame instead of freezing on wherever playback stopped.
-    video.load();
-    this.#playing = null;
-  }
-}
-
-class HeroLoopController {
-  constructor() {
-    this.video = document.querySelector('.hero__video-media');
-    if (!this.video) return;
-    this.apply = this.apply.bind(this);
-    this.apply();
-    reducedMotion.addEventListener?.('change', this.apply);
-  }
-
-  apply() {
-    if (reducedMotion.matches) {
-      this.video.autoplay = false;
-      this.video.removeAttribute('autoplay');
-      this.video.pause();
-    } else {
-      this.video.autoplay = true;
-      this.video.setAttribute('autoplay', '');
-      this.video.play().catch(() => {});
+  #pauseCurrent() {
+    if (this.#currentlyPlaying && !this.#currentlyPlaying.paused) {
+      const card = this.#currentlyPlaying.closest('.reel-card');
+      const seekTime = parseFloat(card?.dataset.seekTime || '1.0');
+      this.#currentlyPlaying.pause();
+      this.#currentlyPlaying.currentTime = seekTime;
+      this.#currentlyPlaying = null;
     }
   }
+
+  init() {
+    if (!this.#cards.length) return;
+
+    this.#observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const video = entry.target;
+          const card = video.closest('.reel-card');
+          const src = video.dataset.src;
+          if (src && !video.src) {
+            video.preload = 'metadata';
+            video.src = src;
+            video.classList.add('has-src');
+            const seekTime = parseFloat(card?.dataset.seekTime || '1.0');
+            video.addEventListener('loadedmetadata', () => {
+              if (video.currentTime === 0) {
+                video.currentTime = seekTime;
+              }
+            }, { once: true });
+          }
+          this.#observer.unobserve(video);
+        }
+      });
+    }, {
+      threshold: 0,
+      rootMargin: '400px 0px 400px 0px'
+    });
+
+    this.#cards.forEach(card => {
+      const video = card.querySelector('.reel-video');
+      const dataSrc = video?.dataset.src;
+
+      if (video && dataSrc) {
+        this.#observer.observe(video);
+
+        card.addEventListener('mouseenter', () => {
+          if (this.#currentlyPlaying && this.#currentlyPlaying !== video) {
+            this.#pauseCurrent();
+          }
+          this.#currentlyPlaying = video;
+          video.play().catch(() => {});
+        });
+
+        card.addEventListener('mouseleave', () => {
+          video.pause();
+          if (this.#currentlyPlaying === video) {
+            this.#currentlyPlaying = null;
+          }
+          const seekTime = parseFloat(card.dataset.seekTime || '1.0');
+          setTimeout(() => { video.currentTime = seekTime; }, 200);
+        });
+      }
+
+      card.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.#pauseCurrent();
+        this.#videoModal?.open(card);
+      });
+
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.#pauseCurrent();
+          this.#videoModal?.open(card);
+        }
+      });
+    });
+  }
 }
 
+/**
+ * CinematicOpenerController
+ * Coordinates Bang Motion cinematic motion graphics:
+ * - Deterministic ARRI/RED 24fps camera viewfinder timecode generator
+ * - Optical motion blur lifecycle cleanup (removes SVG filter once settled)
+ * - Micro-depth camera parallax on fine-pointer desktop viewports
+ * - Reduced-motion safety
+ */
 class CinematicOpenerController {
   #timecodeEl;
+  #heroEl;
   #wordmarkEl;
-  #rafId = null;
-  #startTime = null;
+  #flareEl;
+  #rafId;
+  #startTime;
+  #isReducedMotion;
 
   constructor(options = {}) {
-    this.options = Object.assign({ fps: 24, settleDelayMs: 950 }, options);
-    this.#timecodeEl = document.getElementById('hero-live-timecode');
-    this.#wordmarkEl = document.querySelector('.kinetic-wordmark');
+    this.options = Object.assign({
+      timecodeSelector: '#hero-live-timecode, .hero-tc.bl',
+      heroSelector: '#hero, .hero',
+      wordmarkSelector: '.kinetic-wordmark',
+      flareSelector: '.hero__flare-streak',
+      fps: 24,
+      settleDelayMs: 950
+    }, options);
+
+    this.#timecodeEl = document.querySelector(this.options.timecodeSelector);
+    this.#heroEl = document.querySelector(this.options.heroSelector);
+    this.#wordmarkEl = document.querySelector(this.options.wordmarkSelector);
+    this.#flareEl = document.querySelector(this.options.flareSelector);
+    this.#rafId = null;
+    this.#startTime = null;
+    this.#isReducedMotion = false;
+
     this.tick = this.tick.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
 
-    if (this.#timecodeEl) this.#rafId = requestAnimationFrame(this.tick);
+    this.init();
+  }
 
-    // SVG blur on live text is expensive and leaves it soft; only keep it for the entrance.
-    if (this.#wordmarkEl) {
-      setTimeout(() => { this.#wordmarkEl.style.filter = 'none'; }, reducedMotion.matches ? 0 : this.options.settleDelayMs);
+  init() {
+    this.#isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Deterministic 24 fps ARRI/RED viewfinder telemetry clock
+    if (this.#timecodeEl) {
+      this.#startTime = performance.now();
+      this.#rafId = window.requestAnimationFrame(this.tick);
+    }
+
+    // Bang Motion rule: SVG directional blur filter is removed once animation settles
+    if (!this.#isReducedMotion && this.#wordmarkEl) {
+      setTimeout(() => {
+        if (this.#wordmarkEl) {
+          this.#wordmarkEl.style.filter = 'none';
+        }
+      }, this.options.settleDelayMs);
+    }
+
+    // Micro-depth camera parallax on desktop viewports
+    const supportsHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (supportsHover && !this.#isReducedMotion && this.#heroEl) {
+      window.addEventListener('mousemove', this.handleMouseMove, { passive: true });
     }
   }
 
   tick(now) {
-    if (this.#startTime === null) this.#startTime = now;
-    if (!reducedMotion.matches) {
-      const fps = this.options.fps;
-      const frames = Math.floor(((now - this.#startTime) / 1000) * fps);
-      const pad = (n) => String(n).padStart(2, '0');
-      this.#timecodeEl.textContent = [
-        pad(Math.floor(frames / (fps * 3600)) % 24),
-        pad(Math.floor(frames / (fps * 60)) % 60),
-        pad(Math.floor(frames / fps) % 60),
-        pad(frames % fps)
-      ].join(':');
+    if (!this.#startTime) this.#startTime = now;
+    const elapsedSeconds = (now - this.#startTime) / 1000;
+
+    // 24 frames per second cinema standard
+    const totalFrames = Math.floor(elapsedSeconds * this.options.fps);
+    const ff = String(totalFrames % this.options.fps).padStart(2, '0');
+    const ss = String(Math.floor(totalFrames / this.options.fps) % 60).padStart(2, '0');
+    const mm = String(Math.floor(totalFrames / (this.options.fps * 60)) % 60).padStart(2, '0');
+    const hh = String(Math.floor(totalFrames / (this.options.fps * 3600)) % 24).padStart(2, '0');
+
+    if (this.#timecodeEl) {
+      this.#timecodeEl.textContent = `${hh}:${mm}:${ss}:${ff}`;
     }
-    this.#rafId = requestAnimationFrame(this.tick);
+
+    this.#rafId = window.requestAnimationFrame(this.tick);
+  }
+
+  handleMouseMove(e) {
+    if (!this.#heroEl || this.#isReducedMotion) return;
+    const rect = this.#heroEl.getBoundingClientRect();
+    if (rect.bottom < 0) return; // User has scrolled down
+
+    const normX = (e.clientX / window.innerWidth) - 0.5;
+    const normY = (e.clientY / window.innerHeight) - 0.5;
+
+    const inner = this.#heroEl.querySelector('.hero-inner');
+    if (inner) {
+      inner.style.transform = `translate3d(${normX * 8}px, ${normY * 8}px, 0)`;
+    }
   }
 
   destroy() {
-    if (this.#rafId) cancelAnimationFrame(this.#rafId);
-    this.#rafId = null;
+    if (this.#rafId) {
+      window.cancelAnimationFrame(this.#rafId);
+      this.#rafId = null;
+    }
+    window.removeEventListener('mousemove', this.handleMouseMove);
   }
 }
 
-// Only two things move on scroll: the shot list wipes in like a cut, the slate claps once.
-// Everything else just sits there.
-function rollOnEntry() {
-  const targets = document.querySelectorAll('.shot-log, .slate');
-  if (!targets.length || !('IntersectionObserver' in window)) {
-    targets.forEach(el => el.classList.add('is-rolling'));
-    return;
-  }
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add('is-rolling');
-      io.unobserve(entry.target);
-    });
-  }, { threshold: 0.3 });
-  targets.forEach(el => io.observe(el));
-}
-
+/**
+ * PortfolioApp
+ * Global coordinator and entry point initialized on DOMContentLoaded.
+ */
 class PortfolioApp {
   constructor() {
+    this.headerNav = null;
+    this.reelFilter = null;
+    this.videoModal = null;
+    this.mediaPreview = null;
+    this.opener = null;
     this.isInitialized = false;
   }
 
   init() {
     if (this.isInitialized) return;
-    warnOnSuspectDurations(FILMS);
-    renderReel(document.getElementById('reel-grid'), FILMS);
 
     this.headerNav = new HeaderNavController();
     this.reelFilter = new ReelFilterController();
-    this.videoModal = new VideoModalPlayerController(FILMS);
+    this.videoModal = new VideoModalPlayerController();
     this.mediaPreview = new MediaPreviewController(this.videoModal);
-    this.heroLoop = new HeroLoopController();
     this.opener = new CinematicOpenerController();
-    rollOnEntry();
 
     this.isInitialized = true;
   }
 }
 
+// Self-bootstrapping entry point
 const bootstrapApp = () => {
   const app = new PortfolioApp();
   app.init();
@@ -794,11 +879,35 @@ if (document.readyState === 'loading') {
   bootstrapApp();
 }
 
-// The opener waits for 'load', but a slow hero video shouldn't hold the title back.
-const revealHero = () => document.getElementById('hero')?.classList.add('revealed');
+// ---------- Hero load-in (Resilient Multi-Event Trigger) ----------
+const revealHero = () => {
+  const hero = document.getElementById('hero');
+  if (hero && !hero.classList.contains('revealed')) {
+    hero.classList.add('revealed');
+  }
+};
+
 if (document.readyState === 'complete') {
   revealHero();
 } else {
   window.addEventListener('load', revealHero);
+  // Guarantee hero reveals smoothly within 250ms even if external media delays 'load'
   setTimeout(revealHero, 250);
 }
+
+// ---------- Uniform scroll-reveal for every section ----------
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('is-visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, {
+  threshold: 0.18,
+  rootMargin: '0px 0px -8% 0px'
+});
+
+document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
+  revealObserver.observe(el);
+});

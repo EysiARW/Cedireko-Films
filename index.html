@@ -3,25 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CEDIREKO Films | Videographer in Manila, Philippines</title>
-<meta name="description" content="One-person video studio in Manila shooting brand ads, music videos and vertical fashion reels.">
+<title>CEDIREKO Films — Videographer in Manila, Philippines</title>
+<meta name="description" content="CEDIREKO Films is a videography studio in Manila, Philippines, crafting cinematic narratives, commercial campaigns, and vertical films.">
 <link rel="canonical" href="https://eysiarw.github.io/Cedireko-Films/">
 
 <meta name="theme-color" content="#3C0008">
 
+<!-- Open Graph / Facebook -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="CEDIREKO Films | Videographer in Manila, Philippines">
-<meta property="og:description" content="One-person video studio in Manila shooting brand ads, music videos and vertical fashion reels.">
+<meta property="og:title" content="CEDIREKO Films — Videographer in Manila, Philippines">
+<meta property="og:description" content="CEDIREKO Films is a videography studio in Manila, Philippines, crafting cinematic narratives, commercial campaigns, and vertical films.">
 <meta property="og:image" content="https://eysiarw.github.io/Cedireko-Films/assets/og-cover.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:url" content="https://eysiarw.github.io/Cedireko-Films/">
 
+<!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="CEDIREKO Films | Videographer in Manila, Philippines">
-<meta name="twitter:description" content="One-person video studio in Manila shooting brand ads, music videos and vertical fashion reels.">
+<meta name="twitter:title" content="CEDIREKO Films — Videographer in Manila, Philippines">
+<meta name="twitter:description" content="CEDIREKO Films is a videography studio in Manila, Philippines, crafting cinematic narratives, commercial campaigns, and vertical films.">
 <meta name="twitter:image" content="https://eysiarw.github.io/Cedireko-Films/assets/og-cover.jpg">
 
+<!-- Structured Data (JSON-LD) -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -49,65 +52,89 @@
 </head>
 <body>
 
-  <!-- The wordmark enters with a vertical smear; script.js drops the filter once it lands so text stays crisp. -->
-  <svg class="sr-only" aria-hidden="true" focusable="false">
+  <!-- Bang Motion: Directional Motion Blur Optical Filters -->
+  <svg class="sr-only" aria-hidden="true" style="position: absolute; width: 0; height: 0; pointer-events: none;">
     <defs>
       <filter id="motion-blur-vert" x="-50%" y="-70%" width="200%" height="240%">
         <feGaussianBlur in="SourceGraphic" stdDeviation="0 14" />
       </filter>
+      <filter id="motion-blur-horiz" x="-70%" y="-50%" width="240%" height="200%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="20 0" />
+      </filter>
     </defs>
   </svg>
 
+  <!-- Skip link for keyboard accessibility (WCAG 2.4.1) -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <!-- Subtle analog film grain texture -->
   <div class="grain" aria-hidden="true"></div>
 
+  <!-- SITE HEADER: Dual-state fixed translucent header -->
   <header class="site-header" id="site-header">
     <div class="site-header__container">
-      <a href="#hero" class="site-header__brand" aria-label="CEDIREKO Films, back to top">
-        <img src="assets/CEDIREKO PNG.png" alt="" class="site-header__logo" width="32" height="32" decoding="async">
+      
+      <!-- Studio Brand & Logo Link -->
+      <a href="#hero" class="site-header__brand" aria-label="CEDIREKO FILMS — Back to top">
+        <img src="assets/CEDIREKO PNG.png" alt="CEDIREKO Films logo mark" class="site-header__logo" width="32" height="32" decoding="async">
         <span class="site-header__brand-text wordmark">CEDIREKO FILMS</span>
       </a>
 
-      <nav class="site-header__nav" aria-label="Primary">
+      <!-- Desktop Navigation Links -->
+      <nav class="site-header__nav" aria-label="Primary navigation">
         <ul class="site-header__nav-list">
-          <li><a href="#reel" class="site-header__nav-link">Work</a></li>
-          <li><a href="#services" class="site-header__nav-link">Services</a></li>
-          <li><a href="#about" class="site-header__nav-link">About</a></li>
-          <li><a href="#contact" class="site-header__nav-link site-header__nav-link--inquire">Inquire</a></li>
+          <li class="site-header__nav-item">
+            <a href="#about" class="site-header__nav-link">About</a>
+          </li>
+          <li class="site-header__nav-item">
+            <a href="#reel" class="site-header__nav-link">Work</a>
+          </li>
         </ul>
       </nav>
 
-      <button type="button"
-              class="site-header__burger"
-              id="mobile-nav-toggle"
-              aria-controls="mobile-nav"
-              aria-expanded="false"
-              aria-label="Open navigation menu">
+      <!-- Mobile Hamburger Toggle Button -->
+      <button type="button" 
+              class="site-header__burger" 
+              id="mobile-nav-toggle" 
+              aria-controls="mobile-nav" 
+              aria-expanded="false" 
+              aria-label="Toggle navigation menu">
         <span class="burger-box" aria-hidden="true">
           <span class="burger-line"></span>
           <span class="burger-line"></span>
           <span class="burger-line"></span>
         </span>
       </button>
+
     </div>
 
-    <div class="mobile-nav" id="mobile-nav" inert>
+    <!-- Mobile Navigation Drawer Overlay -->
+    <div class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" inert>
       <div class="mobile-nav__backdrop" aria-hidden="true"></div>
-      <nav class="mobile-nav__panel" aria-label="Mobile" tabindex="-1">
+      <nav class="mobile-nav__panel" aria-label="Mobile navigation menu" tabindex="-1">
         <div class="mobile-nav__header">
-          <button type="button" class="mobile-nav__close" id="mobile-nav-close" aria-label="Close navigation menu">
+          <button type="button" 
+                  class="mobile-nav__close" 
+                  id="mobile-nav-close" 
+                  aria-label="Close navigation menu">
             <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
+
         <ul class="mobile-nav__list">
-          <li class="mobile-nav__item"><a href="#reel" class="mobile-nav__link"><span class="mobile-nav__label">Work</span></a></li>
-          <li class="mobile-nav__item"><a href="#services" class="mobile-nav__link"><span class="mobile-nav__label">Services</span></a></li>
-          <li class="mobile-nav__item"><a href="#about" class="mobile-nav__link"><span class="mobile-nav__label">About</span></a></li>
-          <li class="mobile-nav__item mobile-nav__item--inquire"><a href="#contact" class="mobile-nav__link"><span class="mobile-nav__label">Inquire</span></a></li>
+          <li class="mobile-nav__item">
+            <a href="#about" class="mobile-nav__link">
+              <span class="mobile-nav__label">About</span>
+            </a>
+          </li>
+          <li class="mobile-nav__item">
+            <a href="#reel" class="mobile-nav__link">
+              <span class="mobile-nav__label">Work</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
@@ -115,193 +142,184 @@
 
 <main id="main-content" tabindex="-1">
 
+  <!-- HERO: Cinematic Showcase -->
   <section class="hero" id="hero" aria-labelledby="hero-title">
+    <!-- Ambient looping cinematic video background -->
     <div class="hero__video-bg" aria-hidden="true">
-      <video class="hero__video-media" autoplay muted loop playsinline preload="metadata" poster="assets/posters/ea.jpg" disablepictureinpicture>
-        <source src="projects/hero-loop.webm" type="video/webm">
-        <source src="projects/hero-loop.mp4" type="video/mp4">
-        <!-- Stopgap until the hero-loop files are encoded: the browser only reaches this after both above 404. Delete it then. -->
+      <video class="hero__video-media" autoplay muted loop playsinline preload="metadata" poster="assets/posters/ea.jpg">
         <source src="projects/EA_FINALCUT.mp4" type="video/mp4">
       </video>
       <div class="hero__video-overlay"></div>
-      <div class="hero__flare-streak"></div>
+      <div class="hero__flare-streak" aria-hidden="true"></div>
     </div>
 
+    <!-- Letterbox cinema framing bars -->
     <div class="letterbox top" aria-hidden="true"></div>
     <div class="letterbox bottom" aria-hidden="true"></div>
 
-    <div class="hero__viewfinder" aria-hidden="true">
-      <span class="hero-tc tl">SC.00 / TK 1</span>
+    <!-- Viewfinder camera telemetry overlay -->
+    <div class="hero__viewfinder hero-viewfinder" aria-hidden="true">
       <span class="hero-tc bl" id="hero-live-timecode">00:00:00:00</span>
-      <span class="hero-tc br">REC <span class="tally-dot">&bull;</span></span>
+      <span class="hero-tc br">REC <span class="tally-dot" aria-hidden="true">&bull;</span></span>
     </div>
 
-    <div class="hero-inner">
+    <!-- Central Hero Staging: Clear 3-Tier Visual Hierarchy -->
+    <div class="hero-inner hero__inner">
+      <div class="logo-mark hero__logo">
+        <img src="assets/CEDIREKO PNG.png" 
+             alt="CEDIREKO Films studio logo" 
+             class="hero__logo-img" 
+             width="64" 
+             height="64" 
+             fetchpriority="high" 
+             decoding="async">
+      </div>
       <h1 id="hero-title" class="studio-name hero__title wordmark">
         <span class="kinetic-wordmark">CEDIREKO FILMS</span>
       </h1>
-      <p class="hero__pitch">Commercial campaigns, music videos, and vertical films in Manila &amp; beyond.</p>
-      <p class="tagline hero__tagline" lang="tl">&ldquo;Maging mabait lang palagi.&rdquo;</p>
-      <a href="#contact" class="hero__cta">Start a project</a>
+      <div class="hero__tagline-group">
+        <p class="tagline hero__tagline">&ldquo;Maging mabait lang palagi.&rdquo;</p>
+      </div>
+      <p class="hero__descriptor">Cinematography &bull; Direction &bull; Manila</p>
     </div>
   </section>
 
+  <!-- ABOUT -->
+  <section class="about" id="about" aria-labelledby="about-title">
+    <div class="section-container">
+      <div class="about-grid reveal">
+        <div class="about-frame">
+          <picture>
+            <source srcset="assets/founder-portrait.webp" type="image/webp">
+            <img class="about-placeholder-img" src="assets/founder-portrait.jpg" alt="Portrait of CEDIREKO Films founder and cinematographer" width="400" height="500" loading="lazy" decoding="async">
+          </picture>
+        </div>
+        <div class="about-text">
+          <div class="section-head">
+            <span class="eyebrow">Behind the lens</span>
+            <h2 id="about-title" class="section-title">About</h2>
+          </div>
+          <p class="about-bio">CEDIREKO is a one-person videography studio. Every subject is treated the way I&rsquo;d want to be treated on camera, with patient framing, honest color, and sound that breathes.</p>
+          <div class="about-credits">
+            <span class="about-credits-item">Cinematography &amp; Direction</span>
+            <span class="about-credits-dot" aria-hidden="true">&bull;</span>
+            <span class="about-credits-item">Manila, Philippines</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELECTED WORK -->
   <section class="reel" id="reel" aria-labelledby="reel-title">
     <div class="section-container">
-      <div class="section-head reel-head">
+      <div class="section-head reel-head reveal">
         <div>
-          <p class="eyebrow">Reel</p>
-          <h2 id="reel-title" class="section-title">Selected work</h2>
+          <span class="eyebrow">Selected work</span>
+          <h2 id="reel-title" class="section-title">Selected Work</h2>
         </div>
-        <div class="reel-toggle" role="tablist" aria-label="Filter by frame">
+        <div class="reel-toggle" role="tablist" aria-label="Reel orientation">
           <button type="button" class="reel-toggle-btn is-active" data-view="all" role="tab" aria-selected="true" id="tab-all" aria-controls="reel-grid">All</button>
           <button type="button" class="reel-toggle-btn" data-view="landscape" role="tab" aria-selected="false" id="tab-films" aria-controls="reel-grid">Films</button>
           <button type="button" class="reel-toggle-btn" data-view="portrait" role="tab" aria-selected="false" id="tab-vertical" aria-controls="reel-grid">Vertical</button>
         </div>
       </div>
 
-      <!-- Filled by renderReel() in script.js from the FILMS array. -->
-      <div class="reel-grid" id="reel-grid" data-view="all" role="tabpanel" aria-labelledby="tab-all"></div>
+      <!-- Reel Grid: Responsive showcase with structured metadata -->
+      <div class="reel-grid reveal-stagger" id="reel-grid" data-view="all" role="tabpanel" aria-labelledby="tab-all">
 
-      <noscript>
-        <ul class="reel-noscript">
-          <li><a href="projects/VERONIKKA_REVISED_3.mp4">Veronikka rebranding (MP4)</a></li>
-          <li><a href="projects/EA_FINALCUT.mp4">EA performance (MP4)</a></li>
-          <li><a href="projects/FICOMANA_CYRA_2_1.mp4">Fico Mana: Cyra (MP4)</a></li>
-          <li><a href="projects/BREANNA_1.mp4">Fico Mana: Breanna (MP4)</a></li>
-          <li><a href="projects/FICOMANA_LEIGH_web.mp4">Fico Mana: Leigh (MP4)</a></li>
-        </ul>
-      </noscript>
-    </div>
-  </section>
-
-  <section class="services" id="services" aria-labelledby="services-title">
-    <div class="section-container">
-      <div class="section-head">
-        <p class="eyebrow">Shot list</p>
-        <h2 id="services-title" class="section-title">What people hire me for</h2>
-      </div>
-
-      <ol class="shot-log">
-        <li class="shot">
-          <span class="shot__sc" aria-hidden="true">SC.10</span>
-          <h3 class="shot__name">Brand ads</h3>
-          <!-- EDIT -->
-          <p class="shot__note">Spots for a product or a launch. Usually one shoot day, then cut down to whatever lengths the ads need.</p>
-          <dl class="shot__fields">
-            <div><dt>Delivers</dt><dd>16:9 master + 9:16 cutdowns</dd></div>
-            <!-- EDIT -->
-            <div><dt>Turnaround</dt><dd>About 2 weeks</dd></div>
-          </dl>
-        </li>
-        <li class="shot">
-          <span class="shot__sc" aria-hidden="true">SC.20</span>
-          <h3 class="shot__name">Music videos</h3>
-          <!-- EDIT -->
-          <p class="shot__note">Performance, narrative, or a bit of both. Bring a treatment, or we write one together over coffee.</p>
-          <dl class="shot__fields">
-            <div><dt>Delivers</dt><dd>16:9 master</dd></div>
-            <div><dt>See</dt><dd>EA performance, above</dd></div>
-          </dl>
-        </li>
-        <li class="shot">
-          <span class="shot__sc" aria-hidden="true">SC.30</span>
-          <h3 class="shot__name">Fashion &amp; editorial reels</h3>
-          <!-- EDIT -->
-          <p class="shot__note">Lookbook and campaign reels for labels and stylists. The Fico Mana series is this.</p>
-          <dl class="shot__fields">
-            <div><dt>Delivers</dt><dd>One 9:16 reel per look</dd></div>
-            <!-- EDIT -->
-            <div><dt>Good for</dt><dd>Drops, lookbooks, campaign teasers</dd></div>
-          </dl>
-        </li>
-        <li class="shot">
-          <span class="shot__sc" aria-hidden="true">SC.40</span>
-          <h3 class="shot__name">Vertical content</h3>
-          <!-- EDIT -->
-          <p class="shot__note">Reels and TikToks framed vertical on set. Nothing cropped out of a wide shot later.</p>
-          <dl class="shot__fields">
-            <!-- EDIT -->
-            <div><dt>Turnaround</dt><dd>A few days</dd></div>
-          </dl>
-        </li>
-      </ol>
-    </div>
-  </section>
-
-  <section class="about" id="about" aria-labelledby="about-title">
-    <div class="section-container about-grid">
-      <picture class="about-frame">
-        <source srcset="assets/founder-portrait.webp" type="image/webp">
-        <img class="about-placeholder-img" src="assets/founder-portrait.jpg" alt="Portrait of the founder of CEDIREKO Films" width="400" height="500" loading="lazy" decoding="async">
-      </picture>
-      <div class="about-text">
-        <div class="section-head">
-          <p class="eyebrow">About</p>
-          <h2 id="about-title" class="section-title">The crew is one person.</h2>
+        <!-- Project 01: Veronikka Rebranding -->
+        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.01" data-seek-time="1.0" tabindex="0" role="button" aria-label="Play Veronikka Rebranding (Advertisement)">
+          <div class="reel-thumb" style="background:linear-gradient(150deg,#5c1420,#2a0509 70%);"></div>
+          <video class="reel-video" data-src="projects/VERONIKKA_REVISED_3.mp4" poster="assets/posters/veronikka.jpg" muted loop playsinline preload="metadata"></video>
+          <div class="reel-tc"><span>03:42</span></div>
+          <div class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+          <div class="reel-meta">
+            <div class="reel-meta-eyebrow">
+              <span class="reel-scene" aria-hidden="true">SC.01</span>
+              <span class="reel-cat">ADVERTISEMENT</span>
+            </div>
+            <h3 class="reel-title">VERONIKKA REBRANDING</h3>
+          </div>
         </div>
-        <p class="about-bio">I direct and shoot everything myself, so whoever you message is whoever shows up on set. I try to treat the people in front of the lens the way I&rsquo;d want to be treated on camera. That&rsquo;s all the motto up top means.</p>
-        <p class="about-credits">DP / Director <span aria-hidden="true">&middot;</span> Based in Manila</p>
-      </div>
-    </div>
-  </section>
 
-  <section class="call-sheet" id="contact" aria-labelledby="contact-title">
-    <div class="section-container call-sheet__inner">
-      <div class="call-sheet__body">
-        <div class="section-head">
-          <p class="eyebrow">Call sheet</p>
-          <h2 id="contact-title" class="section-title">Booking a shoot</h2>
+        <!-- Project 02: EA Performance -->
+        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.02" data-seek-time="2.0" tabindex="0" role="button" aria-label="Play EA Performance (Music Video)">
+          <div class="reel-thumb" style="background:linear-gradient(150deg,#7a2233,#3c0008 70%);"></div>
+          <video class="reel-video" data-src="projects/EA_FINALCUT.mp4" poster="assets/posters/ea.jpg" muted loop playsinline preload="metadata"></video>
+          <div class="reel-tc"><span>01:58</span></div>
+          <div class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+          <div class="reel-meta">
+            <div class="reel-meta-eyebrow">
+              <span class="reel-scene" aria-hidden="true">SC.02</span>
+              <span class="reel-cat">MUSIC VIDEO</span>
+            </div>
+            <h3 class="reel-title">EA PERFORMANCE</h3>
+          </div>
         </div>
-        <!-- EDIT -->
-        <p class="call-sheet__note">Send the date and what it&rsquo;s for. A rough budget helps. Messenger gets the fastest reply, pero email is fine kung may attachments.</p>
 
-        <dl class="call-sheet__rows">
-          <div class="call-sheet__row">
-            <dt>Email</dt>
-            <dd><a href="mailto:hello@example.com?subject=Project%20Inquiry">hello@example.com</a></dd>
+        <!-- FICO MANA Series Header: Clean group label without bracket noise -->
+        <div class="reel-series-header" data-series="ficomana">
+          <div class="reel-series-header__inner">
+            <span class="eyebrow">Editorial Series</span>
+            <h3 class="reel-series-title">FICO MANA</h3>
+            <p class="reel-series-desc">Three-part vertical collection &bull; Cyra &bull; Breanna &bull; Leigh</p>
           </div>
-          <div class="call-sheet__row">
-            <dt>Messenger</dt>
-            <dd><a href="https://m.me/USERNAME" target="_blank" rel="noopener">m.me/USERNAME</a></dd>
-          </div>
-          <div class="call-sheet__row">
-            <dt>Instagram</dt>
-            <dd><a href="https://www.instagram.com/USERNAME/" target="_blank" rel="noopener">@USERNAME</a></dd>
-          </div>
-          <div class="call-sheet__row">
-            <dt>TikTok</dt>
-            <dd><a href="https://www.tiktok.com/@USERNAME" target="_blank" rel="noopener">@USERNAME</a></dd>
-          </div>
-          <div class="call-sheet__row">
-            <dt>Facebook</dt>
-            <dd><a href="https://www.facebook.com/profile.php?id=100091618767684" target="_blank" rel="noopener">CEDIREKO Films</a></dd>
-          </div>
-          <div class="call-sheet__row">
-            <dt>Base</dt>
-            <!-- EDIT -->
-            <dd>Manila. Will travel for the right shoot.</dd>
-          </div>
-        </dl>
-      </div>
-
-      <div class="slate" aria-hidden="true">
-        <div class="slate__sticks"></div>
-        <div class="slate__board">
-          <span class="slate__cell slate__cell--wide"><b>Prod.</b> Your project</span>
-          <span class="slate__cell"><b>Roll</b> 01</span>
-          <span class="slate__cell"><b>Scene</b> 07</span>
-          <span class="slate__cell"><b>Take</b> 1</span>
-          <span class="slate__cell slate__cell--wide"><b>Dir.</b> CEDIREKO</span>
-          <span class="slate__cell slate__cell--wide"><b>Date</b> TBD</span>
         </div>
+
+        <!-- Project 03: FICO MANA — Cyra -->
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.03" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Cyra (Vertical Series Pt. 1)">
+          <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
+          <video class="reel-video" data-src="projects/FICOMANA_CYRA_2_1.mp4" poster="assets/posters/ficomana_cyra.jpg" muted loop playsinline preload="metadata"></video>
+          <div class="reel-tc"><span>00:47</span></div>
+          <div class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+          <div class="reel-meta">
+            <div class="reel-meta-eyebrow">
+              <span class="reel-scene" aria-hidden="true">SC.03</span>
+              <span class="reel-cat">FASHION REEL</span>
+            </div>
+            <h3 class="reel-title">CYRA</h3>
+          </div>
+        </div>
+
+        <!-- Project 04: FICO MANA — Breanna -->
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.04" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Breanna (Vertical Series Pt. 2)">
+          <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
+          <video class="reel-video" data-src="projects/BREANNA_1.mp4" poster="assets/posters/ficomana_breanna.jpg" muted loop playsinline preload="metadata"></video>
+          <div class="reel-tc"><span>00:47</span></div>
+          <div class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+          <div class="reel-meta">
+            <div class="reel-meta-eyebrow">
+              <span class="reel-scene" aria-hidden="true">SC.04</span>
+              <span class="reel-cat">FASHION REEL</span>
+            </div>
+            <h3 class="reel-title">BREANNA</h3>
+          </div>
+        </div>
+
+        <!-- Project 05: FICO MANA — Leigh -->
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.05" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Leigh (Vertical Series Pt. 3)">
+          <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
+          <video class="reel-video" data-src="projects/FICOMANA_LEIGH_web.mp4" poster="assets/posters/ficomana_leigh.jpg" muted loop playsinline preload="metadata"></video>
+          <div class="reel-tc"><span>00:47</span></div>
+          <div class="play-ring" aria-hidden="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4l14 8-14 8V4z"/></svg></div>
+          <div class="reel-meta">
+            <div class="reel-meta-eyebrow">
+              <span class="reel-scene" aria-hidden="true">SC.05</span>
+              <span class="reel-cat">FASHION REEL</span>
+            </div>
+            <h3 class="reel-title">LEIGH</h3>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
 
 </main>
 
-  <dialog id="video-modal" class="video-modal" aria-labelledby="modal-title" data-orientation="landscape">
+  <!-- NATIVE VIDEO MODAL PLAYER -->
+  <dialog id="video-modal" class="video-modal" aria-labelledby="modal-title" aria-modal="true">
     <div class="modal-dialog-content modal-inner">
       <button type="button" class="modal-close" aria-label="Close video player">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -309,49 +327,50 @@
         </svg>
       </button>
       <div class="modal-video-container">
-        <video id="modal-video" controls playsinline preload="none">
-          <track kind="captions" srclang="en" label="English" id="modal-captions">
-          <a class="video-fallback" id="modal-fallback" href="projects/VERONIKKA_REVISED_3.mp4">This browser won&rsquo;t play it inline. Open the MP4 instead.</a>
+        <video id="modal-video" controls playsinline preload="metadata" poster="assets/posters/veronikka.jpg">
+          <source src="projects/VERONIKKA_REVISED_3.mp4" type="video/mp4">
+          Your browser does not support native video playback.
         </video>
       </div>
       <div class="modal-info">
         <div class="modal-meta-left">
-          <p class="modal-meta-eyebrow">
+          <div class="modal-meta-eyebrow">
             <span class="modal-scene" id="modal-scene">SC.01</span>
-            <span class="modal-cat" id="modal-cat"></span>
-            <span class="modal-tc" id="modal-tc"></span>
-          </p>
-          <h2 class="modal-title" id="modal-title"></h2>
-          <dl class="modal-credits">
-            <div><dt>Client</dt><dd id="modal-client"></dd></div>
-            <div><dt>Role</dt><dd id="modal-role"></dd></div>
-          </dl>
-          <p class="modal-brief" id="modal-brief"></p>
+            <span class="modal-cat" id="modal-cat">ADVERTISEMENT</span>
+          </div>
+          <h3 class="modal-title" id="modal-title">VERONIKKA REBRANDING</h3>
+          <span class="modal-tc" id="modal-tc">03:42</span>
+          <div class="modal-specs" id="modal-specs"></div>
         </div>
 
-        <div class="modal-transport">
-          <button type="button" class="modal-nav-btn modal-prev" id="modal-prev-btn" aria-label="Previous film" aria-keyshortcuts="ArrowLeft">
+        <!-- Cinema Viewer Transport: Prev / Next Navigation -->
+        <div class="modal-transport" aria-label="Reel transport controls">
+          <button type="button" class="modal-nav-btn modal-prev" id="modal-prev-btn" aria-label="Previous project (Left Arrow)">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="15 18 9 12 15 6"></polyline>
             </svg>
-            <span class="modal-nav-text" aria-hidden="true">PREV</span>
+            <span class="modal-nav-text">PREV</span>
           </button>
-          <button type="button" class="modal-nav-btn modal-next" id="modal-next-btn" aria-label="Next film" aria-keyshortcuts="ArrowRight">
-            <span class="modal-nav-text" aria-hidden="true">NEXT</span>
+          <button type="button" class="modal-nav-btn modal-next" id="modal-next-btn" aria-label="Next project (Right Arrow)">
+            <span class="modal-nav-text">NEXT</span>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <polyline points="9 18 15 12 9 6"></polyline>
             </svg>
           </button>
         </div>
       </div>
-      <p class="sr-only" id="modal-announcer" aria-live="polite"></p>
     </div>
   </dialog>
 
-<footer class="site-footer">
+<!-- SITE FOOTER -->
+<footer class="site-footer" id="contact">
   <div class="footer-inner">
     <span class="footer-brand wordmark">CEDIREKO FILMS</span>
-    <p class="footer-copyright">&copy; 2026 CEDIREKO FILMS <span aria-hidden="true">/</span> End of roll</p>
+    <p class="footer-inquiry-note">Commercial campaigns, music videos, and cinematic narratives in Manila &amp; beyond.</p>
+    <div class="footer-contact">
+      <a href="https://www.facebook.com/profile.php?id=100091618767684" target="_blank" rel="noopener noreferrer" class="footer-contact-link" aria-label="CEDIREKO Films on Facebook (opens in new tab)">Facebook: CEDIREKO Films</a>
+    </div>
+    <p class="footer-copyright">&copy; 2026 CEDIREKO FILMS. ALL RIGHTS RESERVED.</p>
   </div>
 </footer>
 

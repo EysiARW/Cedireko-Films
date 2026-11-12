@@ -20,7 +20,7 @@ suite.test('Journey: Full visitor discovery from landing to reel filtering, moda
   await browser.evaluate("window.scrollTo(0, 0)");
 
   // Assert hero branding is visible
-  const heroLoaded = await browser.evaluate("(() => {\n    const h1 = document.querySelector('.studio-name, .hero h1');\n    const logo = document.querySelector('.site-header__logo');\n    return !!h1 && !!logo;\n  })()");
+  const heroLoaded = await browser.evaluate("(() => {\n    const h1 = document.querySelector('.studio-name, .hero h1');\n    const logo = document.querySelector('.hero img');\n    return !!h1 && !!logo;\n  })()");
   Assert.isTrue(heroLoaded, 'Step 1: Visitor must see hero brand logo and studio name on landing');
 
   // Step 2: Visitor scrolls down to the Reel portfolio section
