@@ -264,6 +264,7 @@ main, footer {
 .site-header__brand {
   display: inline-flex;
   align-items: center;
+  min-height: 44px;
   gap: var(--space-3);
   text-decoration: none;
   color: var(--header-text);
@@ -320,6 +321,9 @@ main, footer {
   color: var(--color-text-secondary);
   text-decoration: none;
   padding: var(--space-2) 0;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   position: relative;
   transition: color var(--duration-fast) var(--ease);
 }
@@ -327,7 +331,7 @@ main, footer {
 .site-header__nav-link::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  bottom: 6px;
   left: 0;
   width: 0;
   height: 1px;
@@ -1283,8 +1287,13 @@ section {
   z-index: 0;
   opacity: 0;
   transition: opacity 0.4s var(--ease), transform var(--duration-slow) var(--ease);
-  transform: translateZ(0) scale(1);
+  transform: translateZ(0) scale(var(--media-zoom, 1));
   will-change: transform, opacity;
+}
+
+/* EA is mastered with 98px letterbox bars (1920x884 inside 1080); zoom past them on the card */
+.reel-card[data-film="ea"] {
+  --media-zoom: 1.23;
 }
 
 .reel-video.has-src {
@@ -1292,7 +1301,7 @@ section {
 }
 
 .reel-card:hover .reel-video.has-src {
-  transform: translateZ(0) scale(1.04);
+  transform: translateZ(0) scale(calc(var(--media-zoom, 1) * 1.04));
 }
 
 /* High-Contrast Editorial Gradient Scrim */
@@ -1316,6 +1325,8 @@ section {
   font-size: var(--text-xs);
   letter-spacing: 0.06em;
   color: var(--bone-dim);
+  /* keeps the duration legible on bright frames (e.g. EA's daylight wall) */
+  text-shadow: 0 1px 3px rgba(24, 3, 7, 0.9), 0 0 10px rgba(24, 3, 7, 0.6);
   z-index: 2;
   pointer-events: none;
 }
@@ -1820,11 +1831,19 @@ dialog#video-modal.video-modal--portrait {
   color: var(--ember);
   text-decoration: none;
   padding: var(--space-1) var(--space-2);
+  position: relative;
   border: 1px solid var(--color-border-accent);
   border-radius: var(--radius);
   transition:
     background var(--duration-fast) var(--ease),
     color var(--duration-fast) var(--ease);
+}
+
+/* Invisible 44px hit area; the visible box keeps its slim size */
+.footer-contact-link::before {
+  content: "";
+  position: absolute;
+  inset: -10px -1px;
 }
 
 .footer-contact-link:hover {

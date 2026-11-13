@@ -561,7 +561,11 @@ class VideoModalPlayerController {
     const match = window.location.hash.match(/^#film\/([\w-]+)$/);
     if (!match) return;
     const card = this.#cards.find(c => c.dataset.film === match[1]);
-    if (card && this.#cards.indexOf(card) !== this.#currentIndex) this.open(card);
+    if (!card) {
+      if (!this.#dialog?.open) this.#clearHash(); // unknown film link: drop it
+      return;
+    }
+    if (this.#cards.indexOf(card) !== this.#currentIndex) this.open(card);
   }
 
   #syncHash(card) {
@@ -1279,8 +1283,10 @@ const revealObserver = new IntersectionObserver((entries) => {
     }
   });
 }, {
-  threshold: 0.18,
-  rootMargin: '0px 0px -8% 0px'
+  // threshold 0: a ratio threshold never fires on blocks taller than the
+  // viewport allows (e.g. the reel grid in a short landscape window)
+  threshold: 0,
+  rootMargin: '0px 0px -12% 0px'
 });
 
 document.querySelectorAll('.reveal, .reveal-stagger').forEach(el => {
