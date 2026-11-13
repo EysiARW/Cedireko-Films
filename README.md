@@ -57,9 +57,12 @@ CEDIREKO-FILMS-WEBSITE-PORTFOLIO/
 │
 ├── projects/               # Authentic portfolio video files
 │   ├── VERONIKKA_REVISED_3.mp4
+│   ├── hero-loop.mp4       # 12 s, 720p silent hero montage (2.9 MB)
 │   ├── EA_FINALCUT.mp4
 │   ├── FICOMANA_CYRA_2_1.mp4
+│   ├── FICOMANA_CYRA_2_1_web.mp4 # Web derivative (PSNR 47.76 dB, SSIM 0.9929)
 │   ├── BREANNA_1.mp4
+│   ├── BREANNA_1_web.mp4   # Web derivative (PSNR 47.84 dB, SSIM 0.9924)
 │   ├── FICOMANA_LEIGH.mp4
 │   └── FICOMANA_LEIGH_web.mp4 # Web-optimized derivative (43% bandwidth savings)
 │

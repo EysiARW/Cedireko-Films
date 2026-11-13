@@ -840,6 +840,106 @@ class CinematicOpenerController {
 }
 
 /**
+ * HeroLoopController
+ * Owns the hero background loop:
+ * - Pause / play control (WCAG 2.2.2: moving content longer than 5s must be pausable)
+ * - Stops decoding while the hero is off screen, resumes when it returns
+ * - Reduced motion: never autoplays, shows the still poster instead
+ */
+class HeroLoopController {
+  #heroEl;
+  #video;
+  #toggleBtn;
+  #label;
+  #observer;
+  #userPaused;
+  #isReducedMotion;
+
+  constructor(options = {}) {
+    this.options = Object.assign({
+      heroSelector: '#hero',
+      videoSelector: '.hero__video-media',
+      toggleSelector: '#hero-loop-toggle',
+      pausedClass: 'hero--loop-paused'
+    }, options);
+
+    this.#heroEl = document.querySelector(this.options.heroSelector);
+    this.#video = document.querySelector(this.options.videoSelector);
+    this.#toggleBtn = document.querySelector(this.options.toggleSelector);
+    this.#label = this.#toggleBtn?.querySelector('.hero__loop-label') || null;
+    this.#observer = null;
+    this.#userPaused = false;
+    this.#isReducedMotion = false;
+
+    this.handleToggleClick = this.handleToggleClick.bind(this);
+
+    this.init();
+  }
+
+  get isPaused() {
+    return this.#userPaused;
+  }
+
+  init() {
+    if (!this.#heroEl || !this.#video) return;
+
+    this.#isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (this.#isReducedMotion) {
+      // Drop autoplay and reload so the element falls back to its poster frame
+      this.#video.removeAttribute('autoplay');
+      this.#video.autoplay = false;
+      this.#video.pause();
+      this.#video.load();
+      this.#userPaused = true;
+    }
+
+    this.#toggleBtn?.addEventListener('click', this.handleToggleClick);
+
+    if ('IntersectionObserver' in window) {
+      this.#observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (this.#userPaused) return;
+          if (entry.isIntersecting) {
+            this.#video.play().catch(() => {});
+          } else {
+            this.#video.pause();
+          }
+        });
+      }, { threshold: 0 });
+      this.#observer.observe(this.#heroEl);
+    }
+
+    this.#syncUi();
+  }
+
+  handleToggleClick() {
+    this.#userPaused = !this.#userPaused;
+    if (this.#userPaused) {
+      this.#video.pause();
+    } else {
+      this.#video.play().catch(() => {});
+    }
+    this.#syncUi();
+  }
+
+  #syncUi() {
+    this.#heroEl.classList.toggle(this.options.pausedClass, this.#userPaused);
+    if (this.#toggleBtn) {
+      this.#toggleBtn.setAttribute('aria-label', this.#userPaused ? 'Play background video' : 'Pause background video');
+    }
+    if (this.#label) {
+      this.#label.textContent = this.#userPaused ? 'Play' : 'Pause';
+    }
+  }
+
+  destroy() {
+    this.#observer?.disconnect();
+    this.#toggleBtn?.removeEventListener('click', this.handleToggleClick);
+  }
+}
+
+/**
  * PortfolioApp
  * Global coordinator and entry point initialized on DOMContentLoaded.
  */
@@ -850,6 +950,7 @@ class PortfolioApp {
     this.videoModal = null;
     this.mediaPreview = null;
     this.opener = null;
+    this.heroLoop = null;
     this.isInitialized = false;
   }
 
@@ -861,6 +962,7 @@ class PortfolioApp {
     this.videoModal = new VideoModalPlayerController();
     this.mediaPreview = new MediaPreviewController(this.videoModal);
     this.opener = new CinematicOpenerController();
+    this.heroLoop = new HeroLoopController();
 
     this.isInitialized = true;
   }
