@@ -164,6 +164,19 @@ main, footer {
   color: var(--bone);
 }
 
+/* Headlines break into even lines (no lone last word); prose avoids orphans */
+h1, h2, h3,
+.hero__tagline,
+.hero__descriptor,
+.footer-brand,
+.footer-copyright {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
 /* Unified Section Eyebrow Header Pattern */
 .eyebrow {
   font-family: var(--font-mono);
@@ -195,7 +208,8 @@ main, footer {
   color: var(--bone);
   border: 1px solid var(--color-accent);
   border-radius: var(--radius);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
   text-decoration: none;
@@ -314,7 +328,8 @@ main, footer {
 }
 
 .site-header__nav-link {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -866,28 +881,6 @@ main, footer {
   transform: translateY(0);
 }
 
-/* Refined Studio Seal Emblem (Non-competing with headline) */
-.hero__logo {
-  width: 56px;
-  height: 56px;
-  margin-bottom: var(--space-1);
-  filter: drop-shadow(0 0 20px rgba(205, 160, 90, 0.2));
-  opacity: 0.9;
-  transition: transform var(--duration-normal) var(--ease), opacity var(--duration-normal) var(--ease);
-}
-
-.hero__logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-.hero__logo:hover {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
 /* 1. PRIMARY FOCAL POINT: Studio Wordmark */
 .hero__title {
   font-family: var(--font-display);
@@ -950,7 +943,8 @@ main, footer {
 
 /* 3. TERTIARY TIER: Studio Discipline */
 .hero__descriptor {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-sm);
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1049,7 +1043,8 @@ section {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -1102,7 +1097,8 @@ section {
 }
 
 .reel-toggle-btn {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -1554,6 +1550,30 @@ dialog#video-modal.video-modal--portrait {
   justify-content: center;
 }
 
+/* Loading state (set by VideoModalPlayerController while the film buffers).
+   Appears after 300ms so quick loads never flash it. */
+.modal-video-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--ember), transparent);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.modal-video-container.is-loading::after {
+  animation: modal-loading-sweep 1.4s var(--ease) 0.3s infinite;
+}
+
+@keyframes modal-loading-sweep {
+  0% { transform: translateX(-100%); opacity: 1; }
+  100% { transform: translateX(340%); opacity: 1; }
+}
+
 .modal-video-container video {
   width: 100%;
   max-height: 65vh;
@@ -1726,7 +1746,8 @@ dialog#video-modal.video-modal--portrait {
   border: 1px solid var(--line);
   border-radius: var(--radius);
   color: var(--bone);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.14em;
   cursor: pointer;
@@ -1825,7 +1846,8 @@ dialog#video-modal.video-modal--portrait {
 }
 
 .footer-contact-link {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.08em;
   color: var(--ember);
@@ -1857,7 +1879,8 @@ dialog#video-modal.video-modal--portrait {
 }
 
 .footer-copyright {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
+  font-weight: 600;
   font-size: var(--text-xs);
   letter-spacing: 0.12em;
   color: var(--ash-rose);
@@ -1870,6 +1893,12 @@ dialog#video-modal.video-modal--portrait {
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+  .modal-video-container.is-loading::after {
+    animation: none;
+    width: 100%;
+    opacity: 0.6;
+  }
+
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

@@ -538,6 +538,18 @@ class VideoModalPlayerController {
       e.stopPropagation();
     });
 
+    // Loading state: a hairline sweeps across the top of the frame while the film buffers
+    const frame = this.#video?.closest('.modal-video-container');
+    if (frame) {
+      const setLoading = (on) => {
+        const loading = on && !!this.#video.getAttribute('src');
+        frame.classList.toggle('is-loading', loading);
+        frame.setAttribute('aria-busy', String(loading));
+      };
+      ['loadstart', 'waiting'].forEach(type => this.#video.addEventListener(type, () => setLoading(true)));
+      ['canplay', 'playing', 'pause', 'error', 'emptied'].forEach(type => this.#video.addEventListener(type, () => setLoading(false)));
+    }
+
     // Up next: when a film ends, offer the next one with a short countdown
     this.#video?.addEventListener('ended', () => this.#showUpNext());
     this.#upnext.play?.addEventListener('click', (e) => {
