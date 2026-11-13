@@ -236,7 +236,7 @@
       <div class="reel-grid reveal-stagger" id="reel-grid" data-view="all" role="tabpanel" aria-labelledby="tab-all">
 
         <!-- Project 01: Veronikka Rebranding -->
-        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.01" data-seek-time="1.0" tabindex="0" role="button" aria-label="Play Veronikka Rebranding (Advertisement)">
+        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.01" data-film="veronikka" data-seek-time="1.0" tabindex="0" role="button" aria-label="Play Veronikka Rebranding (Advertisement)">
           <div class="reel-thumb" style="background:linear-gradient(150deg,#5c1420,#2a0509 70%);"></div>
           <video class="reel-video" data-src="projects/VERONIKKA_REVISED_3.mp4" poster="assets/posters/veronikka.jpg" muted loop playsinline preload="metadata"></video>
           <div class="reel-tc"><span>01:29</span></div>
@@ -251,7 +251,7 @@
         </div>
 
         <!-- Project 02: EA Performance -->
-        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.02" data-seek-time="2.0" tabindex="0" role="button" aria-label="Play EA Performance (Music Video)">
+        <div class="reel-card stagger-item" data-orientation="landscape" data-scene="SC.02" data-film="ea" data-seek-time="2.0" tabindex="0" role="button" aria-label="Play EA Performance (Music Video)">
           <div class="reel-thumb" style="background:linear-gradient(150deg,#7a2233,#3c0008 70%);"></div>
           <video class="reel-video" data-src="projects/EA_FINALCUT.mp4" poster="assets/posters/ea.jpg" muted loop playsinline preload="metadata"></video>
           <div class="reel-tc"><span>04:41</span></div>
@@ -275,7 +275,7 @@
         </div>
 
         <!-- Project 03: FICO MANA — Cyra -->
-        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.03" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Cyra (Vertical Series Pt. 1)">
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.03" data-film="cyra" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Cyra (Vertical Series Pt. 1)">
           <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
           <video class="reel-video" data-src="projects/FICOMANA_CYRA_2_1_web.mp4" poster="assets/posters/ficomana_cyra.jpg" muted loop playsinline preload="metadata"></video>
           <div class="reel-tc"><span>00:27</span></div>
@@ -290,7 +290,7 @@
         </div>
 
         <!-- Project 04: FICO MANA — Breanna -->
-        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.04" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Breanna (Vertical Series Pt. 2)">
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.04" data-film="breanna" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Breanna (Vertical Series Pt. 2)">
           <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
           <video class="reel-video" data-src="projects/BREANNA_1_web.mp4" poster="assets/posters/ficomana_breanna.jpg" muted loop playsinline preload="metadata"></video>
           <div class="reel-tc"><span>00:34</span></div>
@@ -305,7 +305,7 @@
         </div>
 
         <!-- Project 05: FICO MANA — Leigh -->
-        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.05" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Leigh (Vertical Series Pt. 3)">
+        <div class="reel-card stagger-item" data-orientation="portrait" data-series="ficomana" data-scene="SC.05" data-film="leigh" data-seek-time="1.5" tabindex="0" role="button" aria-label="Play Fico Mana Leigh (Vertical Series Pt. 3)">
           <div class="reel-thumb" style="background:linear-gradient(150deg,#6b1c28,#2a0509 70%);"></div>
           <video class="reel-video" data-src="projects/FICOMANA_LEIGH_web.mp4" poster="assets/posters/ficomana_leigh.jpg" muted loop playsinline preload="metadata"></video>
           <div class="reel-tc"><span>00:45</span></div>
@@ -338,6 +338,18 @@
           <source src="projects/VERONIKKA_REVISED_3.mp4" type="video/mp4">
           Your browser does not support native video playback.
         </video>
+
+        <!-- Up next: shown when a film ends, plays the next one after a 5 s countdown -->
+        <div class="modal-upnext" id="modal-upnext" hidden>
+          <span class="modal-upnext__label">Up next <span class="modal-upnext__count" id="modal-upnext-count" aria-hidden="true">5</span></span>
+          <p class="modal-upnext__title"><span class="modal-upnext__scene" id="modal-upnext-scene">SC.02</span> <span id="modal-upnext-title">EA PERFORMANCE</span></p>
+          <div class="modal-upnext__actions">
+            <button type="button" class="modal-nav-btn" id="modal-upnext-play"><span class="modal-nav-text">Play now</span></button>
+            <button type="button" class="modal-nav-btn" id="modal-upnext-cancel"><span class="modal-nav-text">Cancel</span></button>
+          </div>
+          <span class="modal-upnext__progress" aria-hidden="true"></span>
+        </div>
+        <p class="sr-only" id="modal-upnext-status" aria-live="polite"></p>
       </div>
       <div class="modal-info">
         <div class="modal-meta-left">
@@ -347,7 +359,6 @@
           </div>
           <h3 class="modal-title" id="modal-title">VERONIKKA REBRANDING</h3>
           <span class="modal-tc" id="modal-tc">01:29</span>
-          <div class="modal-specs" id="modal-specs"></div>
         </div>
 
         <!-- Cinema Viewer Transport: Prev / Next Navigation -->
@@ -371,13 +382,16 @@
 
 <!-- SITE FOOTER -->
 <footer class="site-footer" id="contact">
-  <div class="footer-inner">
-    <span class="footer-brand wordmark">CEDIREKO FILMS</span>
-    <p class="footer-inquiry-note">Commercial campaigns, music videos, and cinematic narratives in Manila &amp; beyond.</p>
-    <div class="footer-contact">
+  <!-- Closing letterbox: bookends the hero's bars -->
+  <div class="letterbox top" aria-hidden="true"></div>
+  <div class="letterbox bottom" aria-hidden="true"></div>
+  <div class="footer-inner reveal-stagger">
+    <span class="footer-brand wordmark stagger-item">CEDIREKO FILMS</span>
+    <p class="footer-inquiry-note stagger-item">Commercial campaigns, music videos, and cinematic narratives in Manila &amp; beyond.</p>
+    <div class="footer-contact stagger-item">
       <a href="https://www.facebook.com/profile.php?id=100091618767684" target="_blank" rel="noopener noreferrer" class="footer-contact-link" aria-label="CEDIREKO Films on Facebook (opens in new tab)">Facebook: CEDIREKO Films</a>
     </div>
-    <p class="footer-copyright">&copy; 2026 CEDIREKO FILMS. ALL RIGHTS RESERVED.</p>
+    <p class="footer-copyright stagger-item">&copy; 2026 CEDIREKO FILMS. ALL RIGHTS RESERVED.</p>
   </div>
 </footer>
 

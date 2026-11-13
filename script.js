@@ -399,6 +399,10 @@ class VideoModalPlayerController {
   #currentIndex;
   #lastActiveElement;
   #mouseDownInside;
+  #upnext;
+  #upnextTimer;
+  #upnextRemaining;
+  #isReducedMotion;
 
   constructor() {
     this.#dialog = document.getElementById('video-modal');
@@ -417,6 +421,19 @@ class VideoModalPlayerController {
     this.#currentIndex = -1;
     this.#lastActiveElement = null;
     this.#mouseDownInside = false;
+    this.#upnextTimer = null;
+    this.#upnextRemaining = 0;
+    this.#isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.#upnext = {
+      panel: this.#dialog.querySelector('#modal-upnext'),
+      count: this.#dialog.querySelector('#modal-upnext-count'),
+      scene: this.#dialog.querySelector('#modal-upnext-scene'),
+      title: this.#dialog.querySelector('#modal-upnext-title'),
+      play: this.#dialog.querySelector('#modal-upnext-play'),
+      cancel: this.#dialog.querySelector('#modal-upnext-cancel'),
+      status: this.#dialog.querySelector('#modal-upnext-status'),
+      seconds: 5
+    };
 
     this.navigate = this.navigate.bind(this);
 
@@ -520,6 +537,106 @@ class VideoModalPlayerController {
     modalContent?.addEventListener('click', (e) => {
       e.stopPropagation();
     });
+
+    // Up next: when a film ends, offer the next one with a short countdown
+    this.#video?.addEventListener('ended', () => this.#showUpNext());
+    this.#upnext.play?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.#hideUpNext();
+      this.navigate(1);
+      this.#video?.focus();
+    });
+    this.#upnext.cancel?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.#hideUpNext();
+      this.#video?.focus();
+    });
+
+    // Shareable links: #film/<slug> opens that film
+    window.addEventListener('hashchange', () => this.#openFromHash());
+    this.#openFromHash();
+  }
+
+  #openFromHash() {
+    const match = window.location.hash.match(/^#film\/([\w-]+)$/);
+    if (!match) return;
+    const card = this.#cards.find(c => c.dataset.film === match[1]);
+    if (card && this.#cards.indexOf(card) !== this.#currentIndex) this.open(card);
+  }
+
+  #syncHash(card) {
+    const slug = card?.dataset.film;
+    if (!slug || !window.history?.replaceState) return;
+    window.history.replaceState(null, '', `#film/${slug}`);
+  }
+
+  #clearHash() {
+    if (!window.location.hash.startsWith('#film/') || !window.history?.replaceState) return;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search);
+  }
+
+  #showUpNext() {
+    const { panel, count, scene, title, status, seconds } = this.#upnext;
+    if (!panel || this.#currentIndex < 0) return;
+    const nextCard = this.#cards[this.#currentIndex + 1];
+    if (!nextCard) return; // last film: the reel ends here
+
+    const nextTitle = nextCard.querySelector('.reel-title')?.textContent?.trim() || '';
+    if (scene) scene.textContent = nextCard.dataset.scene || '';
+    if (title) title.textContent = nextTitle;
+    this.#upnextRemaining = seconds;
+    if (count) count.textContent = String(seconds);
+    panel.hidden = false;
+    if (status) status.textContent = `Up next: ${nextTitle}. Plays in ${seconds} seconds.`;
+
+    window.clearInterval(this.#upnextTimer);
+    this.#upnextTimer = window.setInterval(() => {
+      this.#upnextRemaining -= 1;
+      if (count) count.textContent = String(Math.max(0, this.#upnextRemaining));
+      if (this.#upnextRemaining <= 0) {
+        const hadFocus = panel.contains(document.activeElement);
+        this.#hideUpNext();
+        this.navigate(1);
+        if (hadFocus) this.#video?.focus();
+      }
+    }, 1000);
+  }
+
+  #hideUpNext() {
+    window.clearInterval(this.#upnextTimer);
+    this.#upnextTimer = null;
+    if (this.#upnext.panel) this.#upnext.panel.hidden = true;
+    if (this.#upnext.status) this.#upnext.status.textContent = '';
+  }
+
+  /** FLIP: the dialog opens at once (so state is synchronous), then grows out of the card it came from */
+  #playOpenTransition(card) {
+    if (this.#isReducedMotion || typeof this.#dialog.animate !== 'function') return;
+    const from = card.getBoundingClientRect();
+    const to = this.#dialog.getBoundingClientRect();
+    const easing = 'cubic-bezier(0.16, 1, 0.3, 1)';
+    const cardOnScreen = from.width > 0 && from.bottom > 0 && from.top < window.innerHeight;
+
+    if (cardOnScreen && to.width > 0 && to.height > 0) {
+      const dx = from.left - to.left;
+      const dy = from.top - to.top;
+      const sx = from.width / to.width;
+      const sy = from.height / to.height;
+      this.#dialog.animate([
+        { transformOrigin: 'top left', transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`, opacity: 0.6 },
+        { transformOrigin: 'top left', transform: 'none', opacity: 1 }
+      ], { duration: 560, easing });
+    } else {
+      this.#dialog.animate([
+        { transform: 'scale(0.97)', opacity: 0 },
+        { transform: 'none', opacity: 1 }
+      ], { duration: 420, easing });
+    }
+
+    const info = this.#dialog.querySelector('.modal-info');
+    [info, this.#closeBtn].forEach(el => {
+      el?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 360, delay: 280, easing: 'ease-out', fill: 'backwards' });
+    });
   }
 
   /**
@@ -528,6 +645,7 @@ class VideoModalPlayerController {
    */
   navigate(delta) {
     if (!this.#cards.length || this.#currentIndex < 0) return;
+    this.#hideUpNext();
     const total = this.#cards.length;
     const nextIndex = (this.#currentIndex + delta + total) % total;
     this.open(this.#cards[nextIndex]);
@@ -551,9 +669,11 @@ class VideoModalPlayerController {
 
     if (!card) return;
 
-    if (!this.#dialog.open) {
+    const wasOpen = this.#dialog.open;
+    if (!wasOpen) {
       this.#lastActiveElement = document.activeElement;
     }
+    this.#hideUpNext();
 
     const videoEl = card.querySelector('.reel-video, video');
     const src = videoEl?.dataset.src || videoEl?.src || '';
@@ -567,18 +687,8 @@ class VideoModalPlayerController {
     if (this.#tc) this.#tc.textContent = tc;
     if (this.#scene) this.#scene.textContent = scene;
 
-    // Structured metadata synchronization
-    const specsContainer = this.#dialog.querySelector('#modal-specs');
-    if (specsContainer) {
-      specsContainer.innerHTML = '';
-      const details = card.querySelectorAll('.reel-detail');
-      details.forEach(detail => {
-        const span = document.createElement('span');
-        span.className = 'modal-spec-item';
-        span.innerHTML = detail.innerHTML;
-        specsContainer.appendChild(span);
-      });
-    }
+    // Vertical films get a 9:16 viewer
+    this.#dialog.classList.toggle('video-modal--portrait', card.dataset.orientation === 'portrait');
 
     if (this.#video && src) {
       this.#video.src = src;
@@ -601,7 +711,16 @@ class VideoModalPlayerController {
         this.#dialog.setAttribute('open', '');
       }
       this.#closeBtn?.focus();
+      this.#playOpenTransition(card);
+    } else if (!this.#isReducedMotion) {
+      // Next / previous inside the viewer: a quick cut-in on the new film
+      this.#dialog.querySelector('.modal-video-container')?.animate(
+        [{ opacity: 0 }, { opacity: 1 }],
+        { duration: 320, easing: 'ease-out' }
+      );
     }
+
+    this.#syncHash(card);
   }
 
   close() {
@@ -617,6 +736,8 @@ class VideoModalPlayerController {
   }
 
   #cleanupMedia() {
+    this.#hideUpNext();
+    this.#clearHash();
     if (this.#video) {
       this.#video.pause();
       this.#video.removeAttribute('src');
@@ -637,6 +758,9 @@ class VideoModalPlayerController {
  * MediaPreviewController
  * Handles viewport lazy-loading and desktop hover preview playback.
  * Enforces single-video active playback across all preview cards.
+ * On hover-capable devices, moving the pointer across a card scrubs the film
+ * (left edge = start, right edge = end) and a hairline playhead shows the position;
+ * the silent preview keeps playing from wherever the pointer stops.
  */
 class MediaPreviewController {
   #cards;
@@ -690,12 +814,15 @@ class MediaPreviewController {
       rootMargin: '400px 0px 400px 0px'
     });
 
+    const canScrub = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     this.#cards.forEach(card => {
       const video = card.querySelector('.reel-video');
       const dataSrc = video?.dataset.src;
 
       if (video && dataSrc) {
         this.#observer.observe(video);
+        if (canScrub) this.#attachScrub(card, video);
 
         card.addEventListener('mouseenter', () => {
           if (this.#currentlyPlaying && this.#currentlyPlaying !== video) {
@@ -729,6 +856,46 @@ class MediaPreviewController {
         }
       });
     });
+  }
+
+  #attachScrub(card, video) {
+    const playhead = document.createElement('span');
+    playhead.className = 'reel-playhead';
+    playhead.setAttribute('aria-hidden', 'true');
+    const fill = document.createElement('span');
+    fill.className = 'reel-playhead__fill';
+    playhead.appendChild(fill);
+    card.appendChild(playhead);
+
+    const setProgress = (fraction) => {
+      fill.style.setProperty('--progress', Math.min(1, Math.max(0, fraction)).toFixed(4));
+    };
+    const syncFromVideo = () => {
+      if (video.duration) setProgress(video.currentTime / video.duration);
+    };
+    video.addEventListener('timeupdate', syncFromVideo);
+    video.addEventListener('seeked', syncFromVideo);
+    video.addEventListener('loadedmetadata', syncFromVideo);
+
+    let pendingTime = null;
+    let rafId = 0;
+    card.addEventListener('mousemove', (e) => {
+      if (!video.duration || !Number.isFinite(video.duration)) return;
+      const rect = card.getBoundingClientRect();
+      const fraction = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+      setProgress(fraction);
+      pendingTime = fraction * video.duration;
+      if (rafId) return;
+      rafId = window.requestAnimationFrame(() => {
+        rafId = 0;
+        // Skip tiny moves so a still-ish pointer does not hammer the network with seeks
+        if (pendingTime !== null && Math.abs(pendingTime - video.currentTime) > 0.25) {
+          if (typeof video.fastSeek === 'function') video.fastSeek(pendingTime);
+          else video.currentTime = pendingTime;
+        }
+        pendingTime = null;
+      });
+    }, { passive: true });
   }
 }
 
