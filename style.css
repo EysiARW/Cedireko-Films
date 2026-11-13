@@ -676,15 +676,28 @@ main, footer {
   );
   filter: drop-shadow(0 0 12px rgba(205, 160, 90, 0.75));
   opacity: 0;
-  transform: translateY(-50%) scaleX(0.1);
+  transform: translateY(-50%) translateX(-38%) scaleX(0.35);
   pointer-events: none;
   z-index: 3;
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 1.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* One pass across the frame, then gone (no line left over the wordmark) */
 .hero.revealed .hero__flare-streak {
-  opacity: 0.75;
-  transform: translateY(-50%) scaleX(1);
+  animation: flare-sweep 1.8s cubic-bezier(0.45, 0.05, 0.25, 1) 0.55s both;
+}
+
+@keyframes flare-sweep {
+  0% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-38%) scaleX(0.35);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-50%) translateX(38%) scaleX(1);
+  }
 }
 
 /* Cinema Letterbox Scope Framing Bars (2.39:1 Anamorphic Cue) */
@@ -840,7 +853,8 @@ main, footer {
   transform: translateY(var(--reveal-distance));
   transition:
     opacity var(--reveal-duration) var(--ease) 0.3s,
-    transform var(--reveal-duration) var(--ease) 0.3s;
+    transform var(--reveal-duration) var(--ease) 0.3s,
+    translate 0.6s var(--ease) 0s;
 }
 
 .hero.revealed .hero-inner {
@@ -882,24 +896,36 @@ main, footer {
   margin: 0;
 }
 
-/* Bang Motion: Kinetic Optical Typography Reveal */
+/* Bang Motion: Kinetic Optical Typography Reveal
+   Letters are wrapped by CinematicOpenerController (.kinetic-word > .kinetic-letter).
+   Each letter rises stretched and settles; the vertical SVG blur on the wordmark is
+   tweened 30 -> 0 in JS during the move, then removed. Without JS the text is plain. */
 .kinetic-wordmark {
   display: inline-block;
-  will-change: transform, opacity, filter;
+}
+
+.kinetic-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.kinetic-letter {
+  display: inline-block;
+  transform-origin: 50% 100%;
   transition:
-    transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    transform 0.95s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(0.35s + var(--i, 0) * 0.032s);
 }
 
-.hero:not(.revealed) .kinetic-wordmark {
+.hero:not(.revealed) .kinetic-letter {
   opacity: 0;
-  transform: translateY(24px) scale(0.98);
-  filter: url(#motion-blur-vert);
+  transform: translateY(60%) scaleY(1.45);
 }
 
-.hero.revealed .kinetic-wordmark {
+.hero.revealed .kinetic-letter {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none;
 }
 
 /* 2. SECONDARY TIER: Authentic Motto */
@@ -1671,12 +1697,16 @@ dialog#video-modal::backdrop {
   }
 
   .kinetic-wordmark,
-  .hero__flare-streak {
+  .kinetic-letter {
     animation: none !important;
     transition: none !important;
     transform: none !important;
     opacity: 1 !important;
     filter: none !important;
+  }
+
+  .hero__flare-streak {
+    display: none !important;
   }
 
   .tally-dot {
@@ -1686,6 +1716,45 @@ dialog#video-modal::backdrop {
   .hero__loop-toggle {
     opacity: 0.65 !important;
   }
+}
+
+/* ==========================================================================
+   SCROLL SHUTTER
+   As the hero leaves, the letterbox bars close over it and the footage
+   pushes in slightly. Scroll-driven CSS only; browsers without
+   scroll timelines, and reduced-motion visitors, keep the static hero.
+   Uses the individual `scale` property so it composes with the bars'
+   entrance `transform`.
+   ========================================================================== */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero {
+      view-timeline: --hero-exit block;
+    }
+
+    .hero.revealed .letterbox {
+      animation: shutter-close linear both;
+      animation-timeline: --hero-exit;
+      animation-range: exit 0% exit 85%;
+    }
+
+    .hero__video-media {
+      animation: camera-push linear both;
+      animation-timeline: --hero-exit;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+@keyframes shutter-close {
+  from { scale: 1 1; }
+  to { scale: 1 6.5; }
+}
+
+@keyframes camera-push {
+  from { scale: 1; }
+  to { scale: 1.12; }
 }
 
 /* Visually hidden, still exposed to assistive tech */

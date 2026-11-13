@@ -735,18 +735,25 @@ class MediaPreviewController {
 /**
  * CinematicOpenerController
  * Coordinates Bang Motion cinematic motion graphics:
- * - Deterministic ARRI/RED 24fps camera viewfinder timecode generator
- * - Optical motion blur lifecycle cleanup (removes SVG filter once settled)
- * - Micro-depth camera parallax on fine-pointer desktop viewports
+ * - Splits the wordmark into letters for a staggered rise (CSS) with a vertical
+ *   SVG motion blur tweened 30 -> 0 during the move, then removed
+ * - 24fps viewfinder timecode from 01:00:00:00; freezes while the loop is paused
+ *   and stops its rAF while the hero is off screen
+ * - Micro-depth camera parallax on fine-pointer desktops (individual `translate`)
  * - Reduced-motion safety
  */
 class CinematicOpenerController {
   #timecodeEl;
   #heroEl;
   #wordmarkEl;
-  #flareEl;
+  #blurNode;
   #rafId;
-  #startTime;
+  #lastNow;
+  #elapsedMs;
+  #heroVisible;
+  #heroObserver;
+  #classObserver;
+  #blurRafId;
   #isReducedMotion;
 
   constructor(options = {}) {
@@ -754,17 +761,27 @@ class CinematicOpenerController {
       timecodeSelector: '#hero-live-timecode, .hero-tc.bl',
       heroSelector: '#hero, .hero',
       wordmarkSelector: '.kinetic-wordmark',
-      flareSelector: '.hero__flare-streak',
+      blurFilterSelector: '#motion-blur-vert feGaussianBlur',
       fps: 24,
-      settleDelayMs: 950
+      startHour: 1,               // broadcast convention: picture starts at 01:00:00:00
+      pausedClass: 'hero--loop-paused',
+      blurDelayMs: 350,           // matches the first letter's transition-delay
+      blurDurationMs: 1000,
+      blurFrom: 30,
+      parallaxPx: 8
     }, options);
 
     this.#timecodeEl = document.querySelector(this.options.timecodeSelector);
     this.#heroEl = document.querySelector(this.options.heroSelector);
     this.#wordmarkEl = document.querySelector(this.options.wordmarkSelector);
-    this.#flareEl = document.querySelector(this.options.flareSelector);
+    this.#blurNode = document.querySelector(this.options.blurFilterSelector);
     this.#rafId = null;
-    this.#startTime = null;
+    this.#lastNow = null;
+    this.#elapsedMs = 0;
+    this.#heroVisible = true;
+    this.#heroObserver = null;
+    this.#classObserver = null;
+    this.#blurRafId = null;
     this.#isReducedMotion = false;
 
     this.tick = this.tick.bind(this);
@@ -776,19 +793,29 @@ class CinematicOpenerController {
   init() {
     this.#isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Deterministic 24 fps ARRI/RED viewfinder telemetry clock
-    if (this.#timecodeEl) {
-      this.#startTime = performance.now();
-      this.#rafId = window.requestAnimationFrame(this.tick);
+    this.#splitWordmark();
+
+    // Wordmark blur follows the letters' entrance, then is removed (re-rasterising every frame is costly)
+    if (this.#wordmarkEl && this.#blurNode && !this.#isReducedMotion) {
+      this.#wordmarkEl.style.filter = 'url(#motion-blur-vert)';
+      this.#onReveal(() => this.#runBlurTween());
     }
 
-    // Bang Motion rule: SVG directional blur filter is removed once animation settles
-    if (!this.#isReducedMotion && this.#wordmarkEl) {
-      setTimeout(() => {
-        if (this.#wordmarkEl) {
-          this.#wordmarkEl.style.filter = 'none';
-        }
-      }, this.options.settleDelayMs);
+    // 24 fps viewfinder timecode: only advances while the hero is on screen and recording
+    if (this.#timecodeEl) {
+      this.#renderTimecode();
+      if ('IntersectionObserver' in window && this.#heroEl) {
+        this.#heroObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            this.#heroVisible = entry.isIntersecting;
+            if (this.#heroVisible) this.#startClock();
+            else this.#stopClock();
+          });
+        }, { threshold: 0 });
+        this.#heroObserver.observe(this.#heroEl);
+      } else {
+        this.#startClock();
+      }
     }
 
     // Micro-depth camera parallax on desktop viewports
@@ -798,43 +825,122 @@ class CinematicOpenerController {
     }
   }
 
-  tick(now) {
-    if (!this.#startTime) this.#startTime = now;
-    const elapsedSeconds = (now - this.#startTime) / 1000;
+  /** Wrap each letter so CSS can stagger them; words stay unbreakable, the space stays a real space */
+  #splitWordmark() {
+    const el = this.#wordmarkEl;
+    if (!el || el.dataset.split === 'true') return;
+    const text = el.textContent.trim();
+    const heading = el.closest('h1, h2');
+    if (heading && !heading.hasAttribute('aria-label')) heading.setAttribute('aria-label', text);
+    el.setAttribute('aria-hidden', 'true');
 
-    // 24 frames per second cinema standard
-    const totalFrames = Math.floor(elapsedSeconds * this.options.fps);
-    const ff = String(totalFrames % this.options.fps).padStart(2, '0');
-    const ss = String(Math.floor(totalFrames / this.options.fps) % 60).padStart(2, '0');
-    const mm = String(Math.floor(totalFrames / (this.options.fps * 60)) % 60).padStart(2, '0');
-    const hh = String(Math.floor(totalFrames / (this.options.fps * 3600)) % 24).padStart(2, '0');
+    let index = 0;
+    const fragment = document.createDocumentFragment();
+    text.split(' ').forEach((word, wordIndex) => {
+      if (wordIndex > 0) fragment.appendChild(document.createTextNode(' '));
+      const wordEl = document.createElement('span');
+      wordEl.className = 'kinetic-word';
+      for (const char of word) {
+        const letter = document.createElement('span');
+        letter.className = 'kinetic-letter';
+        letter.style.setProperty('--i', String(index++));
+        letter.textContent = char;
+        wordEl.appendChild(letter);
+      }
+      fragment.appendChild(wordEl);
+    });
+    el.replaceChildren(fragment);
+    el.dataset.split = 'true';
+  }
 
-    if (this.#timecodeEl) {
-      this.#timecodeEl.textContent = `${hh}:${mm}:${ss}:${ff}`;
+  #onReveal(callback) {
+    if (!this.#heroEl) return;
+    if (this.#heroEl.classList.contains('revealed')) {
+      callback();
+      return;
     }
+    this.#classObserver = new MutationObserver(() => {
+      if (this.#heroEl.classList.contains('revealed')) {
+        this.#classObserver.disconnect();
+        this.#classObserver = null;
+        callback();
+      }
+    });
+    this.#classObserver.observe(this.#heroEl, { attributes: true, attributeFilter: ['class'] });
+  }
 
+  #runBlurTween() {
+    const { blurDelayMs, blurDurationMs, blurFrom } = this.options;
+    let start = null;
+    const step = (now) => {
+      if (start === null) start = now;
+      const t = Math.min(1, Math.max(0, (now - start - blurDelayMs) / blurDurationMs));
+      const eased = 1 - Math.pow(1 - t, 4); // power4.out, same feel as the letters' curve
+      const v = blurFrom * (1 - eased);
+      this.#blurNode.setAttribute('stdDeviation', `0 ${v.toFixed(2)}`);
+      if (t < 1) {
+        this.#blurRafId = window.requestAnimationFrame(step);
+      } else {
+        this.#wordmarkEl.style.filter = 'none';
+        this.#blurRafId = null;
+      }
+    };
+    this.#blurNode.setAttribute('stdDeviation', `0 ${blurFrom}`);
+    this.#blurRafId = window.requestAnimationFrame(step);
+  }
+
+  #startClock() {
+    if (this.#rafId) return;
+    this.#lastNow = null;
+    this.#rafId = window.requestAnimationFrame(this.tick);
+  }
+
+  #stopClock() {
+    if (this.#rafId) window.cancelAnimationFrame(this.#rafId);
+    this.#rafId = null;
+    this.#lastNow = null;
+  }
+
+  #renderTimecode() {
+    const { fps, startHour } = this.options;
+    const totalFrames = Math.floor((this.#elapsedMs / 1000) * fps);
+    const ff = String(totalFrames % fps).padStart(2, '0');
+    const ss = String(Math.floor(totalFrames / fps) % 60).padStart(2, '0');
+    const mm = String(Math.floor(totalFrames / (fps * 60)) % 60).padStart(2, '0');
+    const hh = String((startHour + Math.floor(totalFrames / (fps * 3600))) % 24).padStart(2, '0');
+    this.#timecodeEl.textContent = `${hh}:${mm}:${ss}:${ff}`;
+  }
+
+  tick(now) {
+    // The camera only "records" while the loop plays: paused loop or reduced motion freezes the clock
+    const recording = !this.#heroEl?.classList.contains(this.options.pausedClass);
+    if (this.#lastNow !== null && recording) {
+      this.#elapsedMs += now - this.#lastNow;
+      this.#renderTimecode();
+    }
+    this.#lastNow = now;
     this.#rafId = window.requestAnimationFrame(this.tick);
   }
 
   handleMouseMove(e) {
-    if (!this.#heroEl || this.#isReducedMotion) return;
-    const rect = this.#heroEl.getBoundingClientRect();
-    if (rect.bottom < 0) return; // User has scrolled down
+    if (!this.#heroEl || this.#isReducedMotion || !this.#heroVisible) return;
 
     const normX = (e.clientX / window.innerWidth) - 0.5;
     const normY = (e.clientY / window.innerHeight) - 0.5;
+    const px = this.options.parallaxPx;
 
     const inner = this.#heroEl.querySelector('.hero-inner');
     if (inner) {
-      inner.style.transform = `translate3d(${normX * 8}px, ${normY * 8}px, 0)`;
+      // Individual `translate` composes with the entrance `transform` instead of overwriting it
+      inner.style.translate = `${(normX * px).toFixed(2)}px ${(normY * px).toFixed(2)}px`;
     }
   }
 
   destroy() {
-    if (this.#rafId) {
-      window.cancelAnimationFrame(this.#rafId);
-      this.#rafId = null;
-    }
+    this.#stopClock();
+    if (this.#blurRafId) window.cancelAnimationFrame(this.#blurRafId);
+    this.#heroObserver?.disconnect();
+    this.#classObserver?.disconnect();
     window.removeEventListener('mousemove', this.handleMouseMove);
   }
 }
